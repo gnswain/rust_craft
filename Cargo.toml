@@ -1,0 +1,9 @@
+[package]
+name = "FoodCraft"
+version = "0.1.0"
+authors = ["Graham Swain <gnswain2@catamount.wcu.edu>", "Mohammed Bukhattala"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
