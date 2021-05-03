@@ -1,5 +1,5 @@
 [package]
-name = "FoodCraft"
+name = "rust_craft"
 version = "0.1.0"
 authors = ["Graham Swain <gnswain2@catamount.wcu.edu>", "Mohammed Bukhattala"]
 edition = "2018"
