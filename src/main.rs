@@ -1,3 +1,56 @@
+use std::env::args;
+use std::process::exit;
+
+struct Foreman {
+
+}
+
+impl Foreman {
+
+}
+
+
+
+
+
 fn main() {
-    println!("Hello, world!");
+    let args: Vec<String> = args().collect();
+
+    if args.len() != 3 {
+        println!("\nUsage: cargo run [amount of time] [T or F]");
+        exit(0);
+    }
+
+    let mut temp = &args[1];
+    let time: i32 = match temp.parse() {
+        Ok(n) => {
+            n
+        },
+        Err(_) => {
+            eprintln!("\nTime must be an integer.");
+            exit(0);
+        }
+    };
+
+    let mut write_to_file = false;
+
+    // let write_to_file = match write_to_file.parse()
+
+    if args[2].eq_ignore_ascii_case("T") {
+        write_to_file = true;
+        if time < 1 {
+            println!("\nTime must be positive if writing to a file.");
+            exit(0);
+        }
+    } else if !args[2].eq_ignore_ascii_case("F") {
+        println!("\nSecond argument must be either 'T' or 'F' (True/False)");
+        exit(0);
+    }
+
+
+
+
+
+
+
 }
