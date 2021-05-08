@@ -3,6 +3,7 @@ pub mod dock;
 use crate::foreman::Foreman;
 use crate::dock::Dock;
 
+use std::sync::{Condvar, Mutex, Arc};
 use std::env::args;
 use std::process::exit;
 use std::thread;
@@ -11,11 +12,6 @@ use rand::prelude::*;
 
 fn main() {
     let args: Vec<String> = args().collect();
-    let foreman = Forman::new();
-
-    // let mut dick = Dock::new();
-    // dick.place_food("Cheese".to_string());
-
 
     if args.len() != 3 {
         println!("\nUsage: cargo run [amount of time] [T or F]");
@@ -46,13 +42,23 @@ fn main() {
         exit(0);
     }
 
-    // let test = thread::spawn(|| {
-    //     let mut i = 0;
-    //     loop {
-    //         println!("printing shit: {}", i);
-    //         i = i + 1;
-    //     }
-    // });
+    let dock = Arc::new(Mutex::new(Dock::new()));
+    let bologna_cvar = Arc::new(Condvar::new());
+    let cheese_cvar = Arc::new(Condvar::new());
+    let bread_cvar = Arc::new(Condvar::new());
+
+    let foreman = Foreman::new();
+    // ******* Begin Foreman Thread
+    thread::spawn(|| {
+        let mut rng = rand::thread_rng();
+
+        loop {
+            let num = rng.gen_range(1..4);
+        }
+
+
+    });
+    // ******* End Foreman Thread
 
     //thread::park_timeout(Duration::from_secs_f32(time as f32));
 
