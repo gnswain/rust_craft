@@ -37,6 +37,7 @@ impl Foreman {
                 self.bologna.notify_all();
             }
             _ => {}
+        }
     }
 
     // pub fn create(&self) {
