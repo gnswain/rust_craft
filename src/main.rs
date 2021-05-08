@@ -1,4 +1,7 @@
 pub mod foreman;
+pub mod dock;
+use crate::foreman::Foreman;
+use crate::dock::Dock;
 
 use std::env::args;
 use std::process::exit;
@@ -8,7 +11,11 @@ use rand::prelude::*;
 
 fn main() {
     let args: Vec<String> = args().collect();
-    //let man: foreman = Forman::new();
+    let foreman = Forman::new();
+
+    // let mut dick = Dock::new();
+    // dick.place_food("Cheese".to_string());
+
 
     if args.len() != 3 {
         println!("\nUsage: cargo run [amount of time] [T or F]");
@@ -39,22 +46,22 @@ fn main() {
         exit(0);
     }
 
+    // let test = thread::spawn(|| {
+    //     let mut i = 0;
+    //     loop {
+    //         println!("printing shit: {}", i);
+    //         i = i + 1;
+    //     }
+    // });
+
+    //thread::park_timeout(Duration::from_secs_f32(time as f32));
+
+
     let now = Instant::now();
     loop {
         if now.elapsed().as_secs() >= time as u64 {
             exit(0);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 
 }
