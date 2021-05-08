@@ -1,17 +1,10 @@
+mod foreman;
+
 use std::env::args;
 use std::process::exit;
-
-struct Foreman {
-
-}
-
-impl Foreman {
-
-}
-
-
-
-
+use std::thread;
+use std::time::{Duration, Instant};
+use rand::prelude::*;
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -34,8 +27,6 @@ fn main() {
 
     let mut write_to_file = false;
 
-    // let write_to_file = match write_to_file.parse()
-
     if args[2].eq_ignore_ascii_case("T") {
         write_to_file = true;
         if time < 1 {
@@ -46,6 +37,27 @@ fn main() {
         println!("\nSecond argument must be either 'T' or 'F' (True/False)");
         exit(0);
     }
+
+    thread::spawn(|| {
+        let mut rng = rand::thread_rng();
+
+        loop {
+            let num = rng.gen_range(1, 4);
+
+        }
+    });
+
+    let now = Instant::now();
+    loop {
+        if now.elapsed().as_secs() >= time as u64 {
+            exit(0);
+        }
+    }
+
+
+
+
+
 
 
 
