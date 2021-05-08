@@ -1,4 +1,4 @@
-mod foreman;
+pub mod foreman;
 
 use std::env::args;
 use std::process::exit;
@@ -8,6 +8,7 @@ use rand::prelude::*;
 
 fn main() {
     let args: Vec<String> = args().collect();
+    //let man: foreman = Forman::new();
 
     if args.len() != 3 {
         println!("\nUsage: cargo run [amount of time] [T or F]");
@@ -37,15 +38,6 @@ fn main() {
         println!("\nSecond argument must be either 'T' or 'F' (True/False)");
         exit(0);
     }
-
-    thread::spawn(|| {
-        let mut rng = rand::thread_rng();
-
-        loop {
-            let num = rng.gen_range(1, 4);
-
-        }
-    });
 
     let now = Instant::now();
     loop {
