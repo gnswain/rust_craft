@@ -6,14 +6,14 @@ use crate::dock::Dock;
 
 pub struct Foreman {
     dock: Arc<Mutex<Dock>>,
-    bologna: Arc<Condvar>,
-    cheese: Arc<Condvar>,
-    bread: Arc<Condvar>,
+    bologna: Arc<(Mutex<bool>, Condvar)>,
+    cheese: Arc<(Mutex<bool>, Condvar)>,
+    bread: Arc<(Mutex<bool>, Condvar)>,
 }
 
 impl Foreman {
 
-    pub fn new(bologna: Arc<Condvar>, cheese: Arc<Condvar>, bread: Arc<Condvar>, dock: Arc<Mutex<Dock>>) -> Foreman {
+    pub fn new(bologna: Arc<(Mutex<bool>, Condvar)>, cheese: Arc<(Mutex<bool>, Condvar)>, bread: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Foreman {
         Foreman {
             bologna,
             cheese,
@@ -26,33 +26,39 @@ impl Foreman {
         match num {
             1 => {
                 // This is for bologna
+                let (b_lock, b_cvar) = &*self.bread;
+                let (c_lock, c_cvar) = &*self.cheese;
                 {
                     let mut temp = self.dock.lock().unwrap();
                     temp.place_food("Cheese".to_string());
                     temp.place_food("Bread".to_string());
                 }
-                self.bread.notify_all();
-                self.cheese.notify_all();
+                b_cvar.notify_all();
+                c_cvar.notify_all();
             }
             2 => {
                 // This is for bread
+                let (c_lock, c_cvar) = &*self.cheese;
+                let (b_lock, b_cvar) = &*self.bread;
                 {
                     let mut temp = self.dock.lock().unwrap();
                     temp.place_food("Cheese".to_string());
                     temp.place_food("Bologna".to_string());
                 }
-                self.cheese.notify_all();
-                self.bologna.notify_all();
+                c_cvar.notify_all();
+                b_cvar.notify_all();
             }
             3 => {
                 // This is for cheese
+                let (bg_lock, bg_cvar) = &*self.bologna;
+                let (bd_lock, bd_cvar) = &*self.bread;
                 {
                     let mut temp = self.dock.lock().unwrap();
                     temp.place_food("Bread".to_string());
                     temp.place_food("Bologna".to_string());
                 }
-                self.bologna.notify_all();
-                self.bread.notify_all();
+                bg_cvar.notify_all();
+                bd_cvar.notify_all();
             }
             _ => {}
         }

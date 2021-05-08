@@ -43,11 +43,11 @@ fn main() {
     }
 
     let dock = Arc::new(Mutex::new(Dock::new()));
-    let bologna_cvar = Arc::new(Condvar::new());
-    let cheese_cvar = Arc::new(Condvar::new());
-    let bread_cvar = Arc::new(Condvar::new());
+    let bologna_arc = Arc::new((Mutex::new(true), Condvar::new()));
+    let cheese_arc = Arc::new((Mutex::new(true), Condvar::new()));
+    let bread_arc = Arc::new((Mutex::new(true), Condvar::new()));
 
-    let foreman = Foreman::new();
+    let foreman = Foreman::new(bologna_arc, cheese_arc, bread_arc, dock);
     // ******* Begin Foreman Thread
     thread::spawn(|| {
         let mut rng = rand::thread_rng();
