@@ -48,25 +48,32 @@ fn main() {
     let bread_arc = Arc::new((Mutex::new(true), Condvar::new()));
 
     let foreman = Foreman::new(bologna_arc, cheese_arc, bread_arc, dock);
-    // ******* Begin Foreman Thread
-    thread::spawn(|| {
+
+    // ********* Begin Foreman Thread
+    let foreman_thread = thread::spawn(move || {
         let mut rng = rand::thread_rng();
 
         loop {
             let num = rng.gen_range(1..4);
+
+            foreman.place_food(num);
+
+            thread::sleep(Duration::new(1, 0));
         }
 
 
     });
-    // ******* End Foreman Thread
+    // ********* End Foreman Thread
 
     //thread::park_timeout(Duration::from_secs_f32(time as f32));
 
 
     let now = Instant::now();
     loop {
-        if now.elapsed().as_secs() >= time as u64 {
-            exit(0);
+        if time > 0 {
+            if now.elapsed().as_secs() >= time as u64 {
+                exit(0);
+            }
         }
     }
 

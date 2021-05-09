@@ -30,4 +30,15 @@ impl Dock {
             println!("\nDock is broken. Get it together\n");
         }
     }
+
+    pub fn to_string(&mut self) -> String {
+        let mut rtn = "".to_string();
+
+        for f in &self.food {
+            rtn += f;
+            rtn += " ";
+        }
+
+        rtn
+    }
 }

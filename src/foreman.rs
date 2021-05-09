@@ -29,7 +29,7 @@ impl Foreman {
                 let (b_lock, b_cvar) = &*self.bread;
                 let (c_lock, c_cvar) = &*self.cheese;
                 {
-                    let mut temp = self.dock.lock().unwrap();
+                    let temp = &mut *self.dock.lock().unwrap();
                     temp.place_food("Cheese".to_string());
                     temp.place_food("Bread".to_string());
                 }
@@ -39,9 +39,9 @@ impl Foreman {
             2 => {
                 // This is for bread
                 let (c_lock, c_cvar) = &*self.cheese;
-                let (b_lock, b_cvar) = &*self.bread;
+                let (b_lock, b_cvar) = &*self.bologna;
                 {
-                    let mut temp = self.dock.lock().unwrap();
+                    let temp = &mut *self.dock.lock().unwrap();
                     temp.place_food("Cheese".to_string());
                     temp.place_food("Bologna".to_string());
                 }
@@ -53,7 +53,7 @@ impl Foreman {
                 let (bg_lock, bg_cvar) = &*self.bologna;
                 let (bd_lock, bd_cvar) = &*self.bread;
                 {
-                    let mut temp = self.dock.lock().unwrap();
+                    let temp = &mut *self.dock.lock().unwrap();
                     temp.place_food("Bread".to_string());
                     temp.place_food("Bologna".to_string());
                 }
