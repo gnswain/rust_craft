@@ -6,14 +6,14 @@ use crate::dock::Dock;
 
 pub struct Foreman {
     dock: Arc<Mutex<Dock>>,
-    bologna: Arc<(Mutex<bool>, Condvar)>,
-    cheese: Arc<(Mutex<bool>, Condvar)>,
-    bread: Arc<(Mutex<bool>, Condvar)>,
+    bologna: Arc<(Mutex<u32>, Condvar)>,
+    cheese: Arc<(Mutex<u32>, Condvar)>,
+    bread: Arc<(Mutex<u32>, Condvar)>,
 }
 
 impl Foreman {
 
-    pub fn new(bologna: Arc<(Mutex<bool>, Condvar)>, cheese: Arc<(Mutex<bool>, Condvar)>, bread: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Foreman {
+    pub fn new(bologna: Arc<(Mutex<u32>, Condvar)>, cheese: Arc<(Mutex<u32>, Condvar)>, bread: Arc<(Mutex<u32>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Foreman {
         Foreman {
             bologna,
             cheese,
@@ -22,12 +22,15 @@ impl Foreman {
         }
     }
 
-    pub fn place_food(&self, num: i32) {
+    pub fn place_food(&self, num: u32) {
         match num {
             1 => {
                 // This is for bologna
                 let (b_lock, b_cvar) = &*self.bread;
                 let (c_lock, c_cvar) = &*self.cheese;
+
+                let lock = *b_lock.lock().unwrap();
+                
                 {
                     let temp = &mut *self.dock.lock().unwrap();
                     temp.place_food("Cheese".to_string());

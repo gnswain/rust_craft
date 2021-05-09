@@ -1,7 +1,9 @@
 pub mod foreman;
 pub mod dock;
+pub mod messenger;
 use crate::foreman::Foreman;
 use crate::dock::Dock;
+use crate::messenger::Messenger;
 
 use std::sync::{Condvar, Mutex, Arc};
 use std::env::args;
@@ -43,14 +45,14 @@ fn main() {
     }
 
     let dock = Arc::new(Mutex::new(Dock::new()));
-    let bologna_arc = Arc::new((Mutex::new(true), Condvar::new()));
-    let cheese_arc = Arc::new((Mutex::new(true), Condvar::new()));
-    let bread_arc = Arc::new((Mutex::new(true), Condvar::new()));
+    let bologna_man_arc = Arc::new((Mutex::new(0), Condvar::new()));
+    let cheeseman_arc = Arc::new((Mutex::new(0), Condvar::new()));
+    let breadman_arc = Arc::new((Mutex::new(0), Condvar::new()));
 
-    let foreman = Foreman::new(bologna_arc, cheese_arc, bread_arc, dock);
+    let foreman = Foreman::new(bologna_man_arc, cheeseman_arc, breadman_arc, dock);
 
     // ********* Begin Foreman Thread
-    let foreman_thread = thread::spawn(move || {
+    thread::spawn(move || {
         let mut rng = rand::thread_rng();
 
         loop {
