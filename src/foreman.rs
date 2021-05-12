@@ -26,9 +26,10 @@ impl Foreman {
         match num {
             1 => {
                 // This is for bologna
-                let (b_lock, b_cvar) = &*self.bread;
-                let (c_lock, c_cvar) = &*self.cheese;
                 {
+                    let (b_lock, b_cvar) = &*self.bread;
+                    let (c_lock, c_cvar) = &*self.cheese;
+
                     let temp = &mut *self.dock.lock().unwrap();
                     let drop_one = temp.place_food("Bread".to_string());
                     let drop_two = temp.place_food("Cheese".to_string());
@@ -46,9 +47,10 @@ impl Foreman {
             }
             2 => {
                 // This is for bread
-                let (c_lock, c_cvar) = &*self.cheese;
-                let (b_lock, b_cvar) = &*self.bologna;
                 {
+                    let (c_lock, c_cvar) = &*self.cheese;
+                    let (b_lock, b_cvar) = &*self.bologna;
+
                     let temp = &mut *self.dock.lock().unwrap();
                     let drop_one = temp.place_food("Cheese".to_string());
                     let drop_two = temp.place_food("Bologna".to_string());
@@ -64,9 +66,10 @@ impl Foreman {
             }
             3 => {
                 // This is for cheese
-                let (bg_lock, bg_cvar) = &*self.bologna;
-                let (bd_lock, bd_cvar) = &*self.bread;
                 {
+                    let (bg_lock, bg_cvar) = &*self.bologna;
+                    let (bd_lock, bd_cvar) = &*self.bread;
+                    
                     let temp = &mut *self.dock.lock().unwrap();
                     let drop_one = temp.place_food("Bread".to_string());
                     let drop_two = temp.place_food("Bologna".to_string());

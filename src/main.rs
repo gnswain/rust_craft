@@ -79,7 +79,7 @@ fn main() {
         println!("Foreman Thread ID: {:?}", thread::current().id());
         loop {
             // Should wait while the value in the lock is true
-            let num = rng.gen_range(0..4);
+            let num = rng.gen_range(1..4);
             println!("Num: {}", num);
 
             println!("------------------------------------");
