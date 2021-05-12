@@ -41,9 +41,10 @@ impl Dock {
 
         for f in &self.food {
             rtn += f;
-            rtn += " ";
+            rtn += " and ";
         }
 
+        // rtn.truncate(rtn.len() - 5);
         rtn
     }
 }

@@ -36,6 +36,10 @@ impl Miner {
     }
 
     pub fn signal_foreman(&mut self) {
+        println!("\n{} signalling foreman.\n", self.name);
+        {
+            *(*self.foreman).0.lock().unwrap() = false;
+        }
         (*self.foreman).1.notify_all();
     }
 }

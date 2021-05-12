@@ -66,6 +66,7 @@ fn main() {
 // =================== Might want to move these to functions or loops =====================
 
     // Cloning references so we can move it to threads
+    let cloned_f = foreman_arc.clone();
     let cloned_bgm = bolognaman_arc.clone();
     let cloned_cm = cheeseman_arc.clone(); 
     let cloned_br = breadman_arc.clone();
@@ -73,17 +74,22 @@ fn main() {
     // ********* Begin Foreman Thread
     thread::spawn(move || {
         let foreman = Foreman::new(cloned_bgm, cloned_cm, cloned_br, cloned_dock);
+        let (f_lock, f_cvar) = &*cloned_f;
         let mut rng = rand::thread_rng();
         println!("Foreman Thread ID: {:?}", thread::current().id());
         loop {
+            // Should wait while the value in the lock is true
             let num = rng.gen_range(1..4);
-// TODO sleep
+            println!("Num: {}", num);
+
             foreman.place_food(num);
 
-            thread::sleep(Duration::new(1, 0));
+            let mut lock = f_cvar.wait_while(f_lock.lock().unwrap(), |pending| { *pending }).unwrap();
+            *lock = true;
         }
     });
     // ********* End Foreman Thread
+    
     
     let foreman_to_bgm = bolognaman_arc.clone();
     let cloned_bgm = bolognaman_arc.clone();
@@ -167,6 +173,7 @@ fn main() {
                 *count < 2
             }).unwrap();
             bologna_miner.take_food();
+            bologna_miner.take_food();
             println!("##### Bologna Thread: {:?} #####", thread::current().id());
             *lock = 0;
         }
@@ -180,14 +187,15 @@ fn main() {
     let cloned_dock = dock.clone();
     // ********* Begin Cheese Miner Thread
     thread::spawn(move || {
-        let mut bologna_miner = Miner::new("Cheese".to_string(), messenger_to_c, cloned_f, cloned_dock);
-        let (bg_lock, bg_cvar) = &*cloned_c;
+        let mut cheese_miner = Miner::new("Cheese".to_string(), messenger_to_c, cloned_f, cloned_dock);
+        let (c_lock, c_cvar) = &*cloned_c;
 
         loop {
-            let mut lock = bg_cvar.wait_while(bg_lock.lock().unwrap(), |count| {
+            let mut lock = c_cvar.wait_while(c_lock.lock().unwrap(), |count| {
                 *count < 2
             }).unwrap();
-            bologna_miner.take_food();
+            cheese_miner.take_food();
+            cheese_miner.signal_foreman();
             println!("##### Cheese Thread: {:?} #####", thread::current().id());
             *lock = 0;
         }
@@ -201,23 +209,20 @@ fn main() {
     let cloned_dock = dock.clone();
     // ********* Begin Bread Miner Thread
     thread::spawn(move || {
-        let mut bologna_miner = Miner::new("Bread".to_string(), messenger_to_bd, cloned_f, cloned_dock);
-        let (bg_lock, bg_cvar) = &*cloned_bd;
+        let mut bread_miner = Miner::new("Bread".to_string(), messenger_to_bd, cloned_f, cloned_dock);
+        let (bd_lock, bd_cvar) = &*cloned_bd;
 
         loop {
-            let mut lock = bg_cvar.wait_while(bg_lock.lock().unwrap(), |count| {
+            let mut lock = bd_cvar.wait_while(bd_lock.lock().unwrap(), |count| {
                 *count < 2
             }).unwrap();
-            bologna_miner.take_food();
+            bread_miner.take_food();
+            bread_miner.signal_foreman();
             println!("##### Bread Thread: {:?} #####", thread::current().id());
             *lock = 0;
         }
     });
     // ********* End Bread Miner Thread
-    
-
-    //thread::park_timeout(Duration::from_secs_f32(time as f32));
-
 
     let now = Instant::now();
     loop {
