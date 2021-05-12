@@ -173,7 +173,7 @@ fn main() {
                 *count < 2
             }).unwrap();
             bologna_miner.take_food();
-            bologna_miner.take_food();
+            bologna_miner.signal_foreman();
             println!("##### Bologna Thread: {:?} #####", thread::current().id());
             *lock = 0;
         }

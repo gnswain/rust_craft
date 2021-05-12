@@ -44,7 +44,7 @@ impl Dock {
             rtn += " and ";
         }
 
-        // rtn.truncate(rtn.len() - 5);
+        rtn.truncate(rtn.len() - 5);
         rtn
     }
 }
