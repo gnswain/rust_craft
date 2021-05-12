@@ -1,18 +1,18 @@
 use crate::dock::Dock;
 use std::sync::{Condvar, Mutex, Arc};
-use std:: thread;
 
 
 pub struct Foreman {
     dock: Arc<Mutex<Dock>>,
-    bologna: Arc<(Mutex<u32>, Condvar)>,
-    cheese: Arc<(Mutex<u32>, Condvar)>,
-    bread: Arc<(Mutex<u32>, Condvar)>,
+    bologna: Arc<(Mutex<bool>, Condvar)>,
+    cheese: Arc<(Mutex<bool>, Condvar)>,
+    bread: Arc<(Mutex<bool>, Condvar)>,
 }
 
 impl Foreman {
 
-    pub fn new(bologna: Arc<(Mutex<u32>, Condvar)>, cheese: Arc<(Mutex<u32>, Condvar)>, bread: Arc<(Mutex<u32>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Foreman {
+    pub fn new(bologna: Arc<(Mutex<bool>, Condvar)>, cheese: Arc<(Mutex<bool>, Condvar)>,
+               bread: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Foreman {
         Foreman {
             bologna,
             cheese,
@@ -22,21 +22,26 @@ impl Foreman {
     }
 
     pub fn place_food(&self, num: u32) {
+        println!("Place food");
         match num {
             1 => {
                 // This is for bologna
                 let (b_lock, b_cvar) = &*self.bread;
                 let (c_lock, c_cvar) = &*self.cheese;
 
-                let lock = *b_lock.lock().unwrap();
-                
                 {
                     let temp = &mut *self.dock.lock().unwrap();
                     temp.place_food("Cheese".to_string());
                     temp.place_food("Bread".to_string());
+                    
+                    *b_lock.lock().unwrap() = true;
+                    b_cvar.notify_all();
+
+                    *c_lock.lock().unwrap() = true;
+                    c_cvar.notify_all();
                 }
-                b_cvar.notify_all();
-                c_cvar.notify_all();
+
+ 
             }
             2 => {
                 // This is for bread
@@ -46,9 +51,13 @@ impl Foreman {
                     let temp = &mut *self.dock.lock().unwrap();
                     temp.place_food("Cheese".to_string());
                     temp.place_food("Bologna".to_string());
+
+                    *b_lock.lock().unwrap() = true;
+                    b_cvar.notify_all();
+                    
+                    *c_lock.lock().unwrap() = true;
+                    c_cvar.notify_all();
                 }
-                c_cvar.notify_all();
-                b_cvar.notify_all();
             }
             3 => {
                 // This is for cheese
@@ -58,9 +67,13 @@ impl Foreman {
                     let temp = &mut *self.dock.lock().unwrap();
                     temp.place_food("Bread".to_string());
                     temp.place_food("Bologna".to_string());
+
+                    *bg_lock.lock().unwrap() = true;
+                    bg_cvar.notify_all();
+
+                    *bd_lock.lock().unwrap() = true;
+                    bd_cvar.notify_all();
                 }
-                bg_cvar.notify_all();
-                bd_cvar.notify_all();
             }
             _ => {}
         }
