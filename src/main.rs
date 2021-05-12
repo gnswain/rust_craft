@@ -121,7 +121,18 @@ fn main() {
     }
 }
 
-
+/// This function is used to spawn the foreman thread. It takes in 4 atomic references to
+/// communicate with the different messengers. It also takes in an atomic reference to shared
+/// memory. The foreman thread will place food on the dock and sleeps until awaken again by
+/// the miners' signal.
+///
+/// # Arguments
+///
+/// * `foreman_arc` - Communication link for the foreman.
+/// * `bolognaman_arc` - Atomic reference to communicate with the bologna messenger.
+/// * `cheeseman_arc` - Atomic reference to communicate with the cheese messenger.
+/// * `breadman_arc` - Atomic reference to communicate with the bread messenger.
+/// * `dock` - Shared memory.
 fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(Mutex<bool>, Condvar)>,
                  cheeseman_arc: Arc<(Mutex<bool>, Condvar)>, breadman_arc: Arc<(Mutex<bool>, Condvar)>,
                  dock: Arc<Mutex<Dock>>) {
@@ -147,7 +158,7 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
         // ********* End Foreman Thread
 }
 
-
+/// This function is used to spawn the messenger(s) thread.
 fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1: Arc<(Mutex<u32>, Condvar)>,
                    miner2: Arc<(Mutex<u32>, Condvar)>, miner3: Arc<(Mutex<u32>, Condvar)>) {
     // ********* Begin Messenger Thread
@@ -168,7 +179,7 @@ fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1:
     // ********* End Messenger Thread
 }
 
-
+/// this function is used to spawn the miner(s).
 fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<bool>, Condvar)>,
                dock: Arc<Mutex<Dock>>) {
     // ********* Begin Miner Thread
