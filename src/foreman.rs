@@ -1,7 +1,7 @@
 use crate::dock::Dock;
 use std::sync::{Condvar, Mutex, Arc};
 
-
+/// foreman.rs
 pub struct Foreman {
     dock: Arc<Mutex<Dock>>,
     bologna: Arc<(Mutex<bool>, Condvar)>,
