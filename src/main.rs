@@ -76,21 +76,21 @@ fn main() {
     let cloned_bg = bologna_arc.clone();
     let cloned_c = cheese_arc.clone();
     let cloned_br = bread_arc.clone();
-    spawn_messenger(cloned_bgm, cloned_c, cloned_br, cloned_bg);
+    spawn_messenger("Bolognaman".to_string(), cloned_bgm, cloned_c, cloned_br, cloned_bg);
 
     // Setting up and creating Cheeseman thread
     let cloned_cm = cheeseman_arc.clone();
     let cloned_bg = bologna_arc.clone();
     let cloned_c = cheese_arc.clone();
     let cloned_br = bread_arc.clone();
-    spawn_messenger(cloned_cm, cloned_br, cloned_bg, cloned_c);
+    spawn_messenger("Cheeseman".to_string(), cloned_cm, cloned_br, cloned_bg, cloned_c);
 
     // Setting up and creating Breadman thread
     let cloned_brm = breadman_arc.clone();
     let cloned_bg = bologna_arc.clone();
     let cloned_c = cheese_arc.clone();
     let cloned_br = bread_arc.clone();
-    spawn_messenger(cloned_brm, cloned_bg, cloned_c, cloned_br);
+    spawn_messenger("Breadman".to_string(), cloned_brm, cloned_bg, cloned_c, cloned_br);
 
     // Setting up and creating Bologna thread
     let cloned_bg = bologna_arc.clone();
@@ -130,9 +130,10 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
             let foreman = Foreman::new(bolognaman_arc, cheeseman_arc, breadman_arc, dock);
             let (f_lock, f_cvar) = &*foreman_arc;
             let mut rng = rand::thread_rng();
-            println!("Foreman Thread ID: {:?}", thread::current().id());
+            
             loop {
                 // Should wait while the value in the lock is true
+                println!("\nForeman is waking up");
                 let num = rng.gen_range(1..4);
     
                 println!("\n------------------------------------");
@@ -147,35 +148,37 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
 }
 
 
-fn spawn_messenger(messenger: Arc<(Mutex<bool>, Condvar)>, miner1: Arc<(Mutex<u32>, Condvar)>,
+fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1: Arc<(Mutex<u32>, Condvar)>,
                    miner2: Arc<(Mutex<u32>, Condvar)>, miner3: Arc<(Mutex<u32>, Condvar)>) {
     // ********* Begin Messenger Thread
     thread::spawn(move || {
-        let bolognaman = Messenger::new(miner1, miner2, miner3);
+        let dealer = Messenger::new(miner1, miner2, miner3);
         let (lock, cvar) = &*messenger;
 
         loop {
             {
                 // Should wait while the value in the lock is true
                 let mut lock = cvar.wait_while(lock.lock().unwrap(), |pending| { *pending }).unwrap();
-                println!("===== Messenger Thread: {:?} =====", thread::current().id());
-                bolognaman.supplies_delivered();
+                println!("\n{} wakes up.", name);
+                dealer.supplies_delivered();
                 *lock = true;
             }
         }
     });
-    // ********* End Cheeseman Thread
+    // ********* End Messenger Thread
 }
 
 
 fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<bool>, Condvar)>,
                dock: Arc<Mutex<Dock>>) {
-    // ********* Begin Bologna Miner Thread
+    // ********* Begin Miner Thread
     thread::spawn(move || {
-        let mut miner = Miner::new(name, foreman, dock);
+        let temp = name.clone();
+        let mut miner = Miner::new(temp, foreman, dock);
         let (lock, cvar) = &*miner_arc;
 
         loop {
+            println!("\n{} wakes up.", name);
             {
                 let mut lock = cvar.wait_while(lock.lock().unwrap(), |count| {
                     *count < 2
@@ -186,8 +189,8 @@ fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc
             miner.signal_foreman();
             miner.make_food();
             miner.eat_food();
-            println!("##### Miner Thread: {:?} #####", thread::current().id());
+            println!("\n{} needs food.", name);
         }
     });
-    // ********* End Bologna Miner Thread
+    // ********* End Miner Thread
 }
