@@ -15,6 +15,28 @@ use std::thread;
 use std::time::{Instant};
 use rand::prelude::*;
 
+/// main.rs
+///
+/// This file will act as our driver. This program will work as a multi-threaded
+/// application that performs a deadlock free implementation of the Food Craft
+/// Concurrency problem.
+///
+/// # Authors
+///
+/// * Graham Swain
+/// * Mohammed Bukhattala
+///
+/// # Version
+///
+/// 05/12/2021
+
+
+/// Main function. Accepts two command line arguments:
+///     1. The amount of time before the driver ends the distribution operation (seconds).
+///     2. 'T' or 'F'. 'T' to write the output to a single file, 'F' to write
+///        output to the console.
+/// This function will create multiple threads that run concurrently and effectively signal
+/// and share data with each other.
 fn main() {
     let args: Vec<String> = args().collect();
 
@@ -159,6 +181,14 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
 }
 
 /// This function is used to spawn the messenger(s) thread.
+///
+/// # Arguments
+///
+/// * `name` - name to specify type of messenger.
+/// * `messenger` - communication link for the messenger.
+/// * `miner1` - Atomic reference to communicate with the miner(s).
+/// * `miner2` - Atomic reference to communicate with the miner(s).
+/// * `miner3` - Atomic reference to communicate with the miner(s).
 fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1: Arc<(Mutex<u32>, Condvar)>,
                    miner2: Arc<(Mutex<u32>, Condvar)>, miner3: Arc<(Mutex<u32>, Condvar)>) {
     // ********* Begin Messenger Thread
@@ -180,6 +210,13 @@ fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1:
 }
 
 /// this function is used to spawn the miner(s).
+///
+/// # Arguments
+///
+/// * `name` - name to specify type of miner.
+/// * `miner_arc` - communication link for the miner.
+/// * `foreman` - Atomic reference to communicate with the foreman.
+/// * `dock` - Shared data.
 fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<bool>, Condvar)>,
                dock: Arc<Mutex<Dock>>) {
     // ********* Begin Miner Thread
