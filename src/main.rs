@@ -1,6 +1,8 @@
 pub mod foreman;
 pub mod dock;
 pub mod messenger;
+pub mod miner;
+
 use crate::foreman::Foreman;
 use crate::dock::Dock;
 use crate::messenger::Messenger;
@@ -44,13 +46,21 @@ fn main() {
         exit(0);
     }
 
-    let dock = Arc::new(Mutex::new(Dock::new()));
-    let bologna_man_arc = Arc::new((Mutex::new(0), Condvar::new()));
+    let dock = Arc::new(Mutex::new(Dock::new()));   // Docks, shared memory
+
+    // Communication between foreman and messengers
+    let bolognaman_arc = Arc::new((Mutex::new(0), Condvar::new()));
     let cheeseman_arc = Arc::new((Mutex::new(0), Condvar::new()));
     let breadman_arc = Arc::new((Mutex::new(0), Condvar::new()));
 
-    let foreman = Foreman::new(bologna_man_arc, cheeseman_arc, breadman_arc, dock);
+    // Communication between messenger and miners
+    let bologna_arc = Arc::new((Mutex::new(0), Condvar::new()));
+    let cheese_arc = Arc::new((Mutex::new(0), Condvar::new()));
+    let bread_arc = Arc::new((Mutex::new(0), Condvar::new()));
 
+    let foreman = Foreman::new(bolognaman_arc, cheeseman_arc, breadman_arc, dock);
+
+// TODO: Might want to move these to functions
     // ********* Begin Foreman Thread
     thread::spawn(move || {
         let mut rng = rand::thread_rng();
@@ -66,6 +76,37 @@ fn main() {
 
     });
     // ********* End Foreman Thread
+    
+
+    // ********* Begin Bolognaman Thread - Notifies miners of bologna
+
+    // ********* End Bolognaman Thread
+
+
+    // ********* Begin Cheeseman Thread - Notifies miners of cheese
+
+    // ********* End Cheeseman Thread
+
+
+    // ********* Begin Breadman Thread - Notifies miners of bread
+
+    // ********* End Breadman Thread
+
+
+    // ********* Begin Bolognaman Miner Thread
+
+    // ********* End Bolognaman Miner Thread
+
+
+    // ********* Begin Cheese Miner Thread
+
+    // ********* End Cheese Miner Thread
+
+
+    // ********* Begin Bread Miner Thread
+
+    // ********* End Bread Miner Thread
+    
 
     //thread::park_timeout(Duration::from_secs_f32(time as f32));
 

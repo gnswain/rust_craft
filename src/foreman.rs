@@ -1,7 +1,6 @@
+use crate::dock::Dock;
 use std::sync::{Condvar, Mutex, Arc};
 use std:: thread;
-use rand::prelude::*;
-use crate::dock::Dock;
 
 
 pub struct Foreman {
