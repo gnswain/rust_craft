@@ -40,8 +40,16 @@ impl Miner {
         thread::sleep(Duration::from_millis(milli));
     }
 
+    pub fn eat_food(&self) {
+        println!("\n{} is eating food.\n", self.name);
+        let mut rng = rand::thread_rng();
+        let milli = rng.gen_range(0..4000);
+        println!("{} is sleeping for {} milliseconds.", self.name, milli);
+        thread::sleep(Duration::from_millis(milli));
+    }
+
     pub fn signal_foreman(&mut self) {
-        println!("\n{} signalling foreman.\n", self.name);
+        println!("{} signalling foreman.", self.name);
         {
             *(*self.foreman).0.lock().unwrap() = false;
         }

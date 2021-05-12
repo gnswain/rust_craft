@@ -134,7 +134,6 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
             loop {
                 // Should wait while the value in the lock is true
                 let num = rng.gen_range(1..4);
-                println!("Num: {}", num);
     
                 println!("\n------------------------------------");
                 foreman.place_food(num);
@@ -169,23 +168,24 @@ fn spawn_messenger(messenger: Arc<(Mutex<bool>, Condvar)>, miner1: Arc<(Mutex<u3
 }
 
 
-fn spawn_miner(name: String, miner: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<bool>, Condvar)>,
+fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<bool>, Condvar)>,
                dock: Arc<Mutex<Dock>>) {
     // ********* Begin Bologna Miner Thread
     thread::spawn(move || {
-        let mut bologna_miner = Miner::new(name, foreman, dock);
-        let (bg_lock, bg_cvar) = &*miner;
+        let mut miner = Miner::new(name, foreman, dock);
+        let (lock, cvar) = &*miner_arc;
 
         loop {
             {
-                let mut lock = bg_cvar.wait_while(bg_lock.lock().unwrap(), |count| {
+                let mut lock = cvar.wait_while(lock.lock().unwrap(), |count| {
                     *count < 2
                 }).unwrap();
                 *lock = 0;
             }
-            bologna_miner.take_food();
-            bologna_miner.signal_foreman();
-            bologna_miner.make_food();
+            miner.take_food();
+            miner.signal_foreman();
+            miner.make_food();
+            miner.eat_food();
             println!("##### Miner Thread: {:?} #####", thread::current().id());
         }
     });
