@@ -1,16 +1,12 @@
 use crate::dock::Dock;
 use std::sync::{Condvar, Mutex, Arc};
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::{Duration};
 use rand::prelude::*;
 
 pub struct Miner {
     /// Name of miners
     name: String,
-
-    // Will probably remove and put in main
-    // Link between messenger and miner
-    messenger: Arc<(Mutex<u32>, Condvar)>,
 
     // Might also go in main
     foreman: Arc<(Mutex<bool>, Condvar)>,
@@ -19,11 +15,9 @@ pub struct Miner {
 }
 
 impl Miner {
-    pub fn new(name: String, messenger: Arc<(Mutex<u32>, Condvar)>, 
-               foreman: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Miner {
+    pub fn new(name: String, foreman: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Miner {
         Miner {
             name,
-            messenger,
             foreman,
             dock
         }

@@ -12,7 +12,7 @@ use std::sync::{Condvar, Mutex, Arc};
 use std::env::args;
 use std::process::exit;
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::{Instant};
 use rand::prelude::*;
 
 fn main() {
@@ -93,14 +93,13 @@ fn main() {
     // ********* End Foreman Thread
     
     
-    let foreman_to_bgm = bolognaman_arc.clone();
     let cloned_bgm = bolognaman_arc.clone();
     let cloned_bg = bologna_arc.clone();
     let cloned_c = cheese_arc.clone();
     let cloned_br = bread_arc.clone();
     // ********* Begin Bolognaman Thread - Notifies miners of bologna
     thread::spawn(move || {
-        let bolognaman = Messenger::new(foreman_to_bgm, cloned_c, cloned_br, cloned_bg);
+        let bolognaman = Messenger::new(cloned_c, cloned_br, cloned_bg);
         let (bgm_lock, bgm_cvar) = &*cloned_bgm;
 
         loop {
@@ -116,14 +115,13 @@ fn main() {
     // ********* End Bolognaman Thread
 
 
-    let foreman_to_cm = cheeseman_arc.clone();
     let cloned_cm = cheeseman_arc.clone();
     let cloned_bg = bologna_arc.clone();
     let cloned_c = cheese_arc.clone();
     let cloned_br = bread_arc.clone();
     // ********* Begin Cheeseman Thread - Notifies miners of cheese
     thread::spawn(move || {
-        let bolognaman = Messenger::new(foreman_to_cm, cloned_br, cloned_bg, cloned_c);
+        let bolognaman = Messenger::new(cloned_br, cloned_bg, cloned_c);
         let (cm_lock, cm_cvar) = &*cloned_cm;
 
         loop {
@@ -139,14 +137,13 @@ fn main() {
     // ********* End Cheeseman Thread
 
 
-    let foreman_to_brm = breadman_arc.clone();
     let cloned_brm = breadman_arc.clone();
     let cloned_bg = bologna_arc.clone();
     let cloned_c = cheese_arc.clone();
     let cloned_br = bread_arc.clone();
     // ********* Begin Breadman Thread - Notifies miners of bread
     thread::spawn(move || {
-        let bolognaman = Messenger::new(foreman_to_brm, cloned_bg, cloned_c, cloned_br);
+        let bolognaman = Messenger::new(cloned_bg, cloned_c, cloned_br);
         let (cm_lock, cm_cvar) = &*cloned_brm;
 
         loop {
@@ -161,13 +158,13 @@ fn main() {
     });
     // ********* End Breadman Thread
 
-    let messenger_to_bg = bologna_arc.clone();
+    
     let cloned_bg = bologna_arc.clone();
     let cloned_f = foreman_arc.clone();
     let cloned_dock = dock.clone();
     // ********* Begin Bologna Miner Thread
     thread::spawn(move || {
-        let mut bologna_miner = Miner::new("Bologna".to_string(), messenger_to_bg, cloned_f, cloned_dock);
+        let mut bologna_miner = Miner::new("Bologna".to_string(), cloned_f, cloned_dock);
         let (bg_lock, bg_cvar) = &*cloned_bg;
 
         loop {
@@ -187,13 +184,12 @@ fn main() {
     // ********* End Bologna Miner Thread
 
 
-    let messenger_to_c = cheese_arc.clone();
     let cloned_c = cheese_arc.clone();
     let cloned_f = foreman_arc.clone();
     let cloned_dock = dock.clone();
     // ********* Begin Cheese Miner Thread
     thread::spawn(move || {
-        let mut cheese_miner = Miner::new("Cheese".to_string(), messenger_to_c, cloned_f, cloned_dock);
+        let mut cheese_miner = Miner::new("Cheese".to_string(), cloned_f, cloned_dock);
         let (c_lock, c_cvar) = &*cloned_c;
 
         loop {
@@ -213,13 +209,12 @@ fn main() {
     // ********* End Cheese Miner Thread
 
 
-    let messenger_to_bd = bread_arc.clone();
     let cloned_bd = bread_arc.clone();
     let cloned_f = foreman_arc.clone();
     let cloned_dock = dock.clone();
     // ********* Begin Bread Miner Thread
     thread::spawn(move || {
-        let mut bread_miner = Miner::new("Bread".to_string(), messenger_to_bd, cloned_f, cloned_dock);
+        let mut bread_miner = Miner::new("Bread".to_string(), cloned_f, cloned_dock);
         let (bd_lock, bd_cvar) = &*cloned_bd;
 
         loop {
