@@ -20,6 +20,10 @@ pub struct Dock {
 /// Implementation of the dock struct used to add additional functionality.
 impl Dock {
     /// Dock constructor that has no arguments. Initializes an empty String vector.
+    ///
+    /// # Return Value
+    ///
+    /// * `Dock` - Dock Struct
     pub const fn new() -> Self {
         Dock {
             food: Vec::new()
