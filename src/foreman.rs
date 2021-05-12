@@ -28,17 +28,18 @@ impl Foreman {
                 // This is for bologna
                 let (b_lock, b_cvar) = &*self.bread;
                 let (c_lock, c_cvar) = &*self.cheese;
-
                 {
                     let temp = &mut *self.dock.lock().unwrap();
-                    temp.place_food("Cheese".to_string());
-                    temp.place_food("Bread".to_string());
+                    let drop_one = temp.place_food("Bread".to_string());
+                    let drop_two = temp.place_food("Cheese".to_string());
                     
-                    *b_lock.lock().unwrap() = false;
-                    b_cvar.notify_all();
-
-                    *c_lock.lock().unwrap() = false;
-                    c_cvar.notify_all();
+                    if drop_one && drop_two {
+                        *b_lock.lock().unwrap() = false;
+                        b_cvar.notify_all();
+    
+                        *c_lock.lock().unwrap() = false;
+                        c_cvar.notify_all();
+                    }
                 }
 
  
@@ -49,14 +50,16 @@ impl Foreman {
                 let (b_lock, b_cvar) = &*self.bologna;
                 {
                     let temp = &mut *self.dock.lock().unwrap();
-                    temp.place_food("Cheese".to_string());
-                    temp.place_food("Bologna".to_string());
+                    let drop_one = temp.place_food("Cheese".to_string());
+                    let drop_two = temp.place_food("Bologna".to_string());
 
-                    *b_lock.lock().unwrap() = false;
-                    b_cvar.notify_all();
-                    
-                    *c_lock.lock().unwrap() = false;
-                    c_cvar.notify_all();
+                    if drop_one && drop_two {
+                        *b_lock.lock().unwrap() = false;
+                        b_cvar.notify_all();
+                        
+                        *c_lock.lock().unwrap() = false;
+                        c_cvar.notify_all();
+                    }
                 }
             }
             3 => {
@@ -65,14 +68,16 @@ impl Foreman {
                 let (bd_lock, bd_cvar) = &*self.bread;
                 {
                     let temp = &mut *self.dock.lock().unwrap();
-                    temp.place_food("Bread".to_string());
-                    temp.place_food("Bologna".to_string());
+                    let drop_one = temp.place_food("Bread".to_string());
+                    let drop_two = temp.place_food("Bologna".to_string());
 
-                    *bg_lock.lock().unwrap() = false;
-                    bg_cvar.notify_all();
-
-                    *bd_lock.lock().unwrap() = false;
-                    bd_cvar.notify_all();
+                    if drop_one && drop_two {
+                        *bg_lock.lock().unwrap() = false;
+                        bg_cvar.notify_all();
+    
+                        *bd_lock.lock().unwrap() = false;
+                        bd_cvar.notify_all();
+                    }
                 }
             }
             _ => {}

@@ -10,12 +10,17 @@ impl Dock {
         }
     }
 
-    pub fn place_food(&mut self, meal: String) {
+    pub fn place_food(&mut self, meal: String) -> bool {
+        let rtn: bool;
         if self.food.len() < 2 {
+            println!("Putting {} on dock.", meal);
             self.food.push(meal);
+            rtn = true;
         } else {
             println!("\nCan't place food. Dock is full!\n");
+            rtn = false;
         }
+        rtn
     }
 
     /// For the miners

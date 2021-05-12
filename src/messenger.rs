@@ -40,15 +40,12 @@ impl Messenger {
             if *m_one == 2 {
                 cvar1.notify_all();
 
-                *m_one = 0;
                 *m_two = 0;
                 
                 *(*self.miner3).0.lock().unwrap() = 0;
             } else if *m_two == 2 {
                 cvar2.notify_all();
-
                 *m_one = 0;
-                *m_two = 0;
                 
                 *(*self.miner3).0.lock().unwrap() = 0;
             }

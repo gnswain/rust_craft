@@ -6,6 +6,7 @@ pub mod miner;
 use crate::foreman::Foreman;
 use crate::dock::Dock;
 use crate::messenger::Messenger;
+use crate::miner::Miner;
 
 use std::sync::{Condvar, Mutex, Arc};
 use std::env::args;
@@ -121,7 +122,7 @@ fn main() {
             {
                 // Should wait while the value in the lock is true
                 let mut lock = cm_cvar.wait_while(cm_lock.lock().unwrap(), |pending| { *pending }).unwrap();
-                println!("===== Cheese Man Thread: {:?} =====", thread::current().id());
+                println!("===== Cheeseman Thread: {:?} =====", thread::current().id());
                 bolognaman.supplies_delivered();
                 *lock = true;
             }
@@ -144,7 +145,7 @@ fn main() {
             {
                 // Should wait while the value in the lock is true
                 let mut lock = cm_cvar.wait_while(cm_lock.lock().unwrap(), |pending| { *pending }).unwrap();
-                println!("===== Bread Man Thread: {:?} =====", thread::current().id());
+                println!("===== Breadman Thread: {:?} =====", thread::current().id());
                 bolognaman.supplies_delivered();
                 *lock = true;
             }
@@ -152,27 +153,65 @@ fn main() {
     });
     // ********* End Breadman Thread
 
-
-    // ********* Begin Bolognaman Miner Thread
+    let messenger_to_bg = bologna_arc.clone();
+    let cloned_bg = bologna_arc.clone();
+    let cloned_f = foreman_arc.clone();
+    let cloned_dock = dock.clone();
+    // ********* Begin Bologna Miner Thread
     thread::spawn(move || {
-        println!("Thread: {:?}", thread::current().id());
+        let mut bologna_miner = Miner::new("Bologna".to_string(), messenger_to_bg, cloned_f, cloned_dock);
+        let (bg_lock, bg_cvar) = &*cloned_bg;
 
+        loop {
+            let mut lock = bg_cvar.wait_while(bg_lock.lock().unwrap(), |count| {
+                *count < 2
+            }).unwrap();
+            bologna_miner.take_food();
+            println!("##### Bologna Thread: {:?} #####", thread::current().id());
+            *lock = 0;
+        }
     });
-    // ********* End Bolognaman Miner Thread
+    // ********* End Bologna Miner Thread
 
 
+    let messenger_to_c = cheese_arc.clone();
+    let cloned_c = cheese_arc.clone();
+    let cloned_f = foreman_arc.clone();
+    let cloned_dock = dock.clone();
     // ********* Begin Cheese Miner Thread
     thread::spawn(move || {
+        let mut bologna_miner = Miner::new("Cheese".to_string(), messenger_to_c, cloned_f, cloned_dock);
+        let (bg_lock, bg_cvar) = &*cloned_c;
 
-        println!("Thread: {:?}", thread::current().id());
+        loop {
+            let mut lock = bg_cvar.wait_while(bg_lock.lock().unwrap(), |count| {
+                *count < 2
+            }).unwrap();
+            bologna_miner.take_food();
+            println!("##### Cheese Thread: {:?} #####", thread::current().id());
+            *lock = 0;
+        }
     });
     // ********* End Cheese Miner Thread
 
 
+    let messenger_to_bd = bread_arc.clone();
+    let cloned_bd = bread_arc.clone();
+    let cloned_f = foreman_arc.clone();
+    let cloned_dock = dock.clone();
     // ********* Begin Bread Miner Thread
     thread::spawn(move || {
-        println!("Thread: {:?}", thread::current().id());
+        let mut bologna_miner = Miner::new("Bread".to_string(), messenger_to_bd, cloned_f, cloned_dock);
+        let (bg_lock, bg_cvar) = &*cloned_bd;
 
+        loop {
+            let mut lock = bg_cvar.wait_while(bg_lock.lock().unwrap(), |count| {
+                *count < 2
+            }).unwrap();
+            bologna_miner.take_food();
+            println!("##### Bread Thread: {:?} #####", thread::current().id());
+            *lock = 0;
+        }
     });
     // ********* End Bread Miner Thread
     
