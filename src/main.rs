@@ -144,13 +144,14 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
             
             loop {
                 // Should wait while the value in the lock is true
-                println!("\n~~~ Foreman is waking up ~~~");
+                println!("\nForeman is waking up.");
                 let num = rng.gen_range(1..4);
     
                 println!("\n------------------------------------");
                 foreman.place_food(num);
                 println!("\n------------------------------------\n");
     
+                println!("\nForeman is going to sleep.");
                 let mut lock = f_cvar.wait_while(f_lock.lock().unwrap(), |pending| { *pending }).unwrap();
                 *lock = true;
             }
@@ -189,18 +190,18 @@ fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc
         let (lock, cvar) = &*miner_arc;
 
         loop {
-            println!("\n--- {} wakes up. ---", name);
             {
                 let mut lock = cvar.wait_while(lock.lock().unwrap(), |count| {
                     *count < 2
                 }).unwrap();
                 *lock = 0;
+                println!("\n--- {} wakes up. ---", name);
             }
             miner.take_food();
             miner.signal_foreman();
             miner.make_food();
             miner.eat_food();
-            println!("\n{} needs food.", name);
+            println!("\n--- {} needs food. ---", name);
         }
     });
     // ********* End Miner Thread
