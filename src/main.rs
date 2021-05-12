@@ -65,32 +65,34 @@ fn main() {
 
 // =================== Might want to move these to functions or loops =====================
 
+    
     // Cloning references so we can move it to threads
     let cloned_f = foreman_arc.clone();
     let cloned_bgm = bolognaman_arc.clone();
     let cloned_cm = cheeseman_arc.clone(); 
     let cloned_br = breadman_arc.clone();
     let cloned_dock = dock.clone();
-    // ********* Begin Foreman Thread
-    thread::spawn(move || {
-        let foreman = Foreman::new(cloned_bgm, cloned_cm, cloned_br, cloned_dock);
-        let (f_lock, f_cvar) = &*cloned_f;
-        let mut rng = rand::thread_rng();
-        println!("Foreman Thread ID: {:?}", thread::current().id());
-        loop {
-            // Should wait while the value in the lock is true
-            let num = rng.gen_range(1..4);
-            println!("Num: {}", num);
+    spawn_foreman(cloned_f, cloned_bgm, cloned_cm, cloned_br, cloned_dock);
+    // // ********* Begin Foreman Thread
+    // thread::spawn(move || {
+    //     let foreman = Foreman::new(cloned_bgm, cloned_cm, cloned_br, cloned_dock);
+    //     let (f_lock, f_cvar) = &*cloned_f;
+    //     let mut rng = rand::thread_rng();
+    //     println!("Foreman Thread ID: {:?}", thread::current().id());
+    //     loop {
+    //         // Should wait while the value in the lock is true
+    //         let num = rng.gen_range(1..4);
+    //         println!("Num: {}", num);
 
-            println!("------------------------------------");
-            foreman.place_food(num);
-            println!("------------------------------------");
+    //         println!("------------------------------------");
+    //         foreman.place_food(num);
+    //         println!("------------------------------------");
 
-            let mut lock = f_cvar.wait_while(f_lock.lock().unwrap(), |pending| { *pending }).unwrap();
-            *lock = true;
-        }
-    });
-    // ********* End Foreman Thread
+    //         let mut lock = f_cvar.wait_while(f_lock.lock().unwrap(), |pending| { *pending }).unwrap();
+    //         *lock = true;
+    //     }
+    // });
+    // // ********* End Foreman Thread
     
     
     let cloned_bgm = bolognaman_arc.clone();
@@ -241,5 +243,29 @@ fn main() {
             }
         }
     }
+}
 
+fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(Mutex<bool>, Condvar)>,
+                 cheeseman_arc: Arc<(Mutex<bool>, Condvar)>, breadman_arc: Arc<(Mutex<bool>, Condvar)>,
+                 dock: Arc<Mutex<Dock>>) {
+        // ********* Begin Foreman Thread
+        thread::spawn(move || {
+            let foreman = Foreman::new(bolognaman_arc, cheeseman_arc, breadman_arc, dock);
+            let (f_lock, f_cvar) = &*foreman_arc;
+            let mut rng = rand::thread_rng();
+            println!("Foreman Thread ID: {:?}", thread::current().id());
+            loop {
+                // Should wait while the value in the lock is true
+                let num = rng.gen_range(1..4);
+                println!("Num: {}", num);
+    
+                println!("------------------------------------");
+                foreman.place_food(num);
+                println!("------------------------------------");
+    
+                let mut lock = f_cvar.wait_while(f_lock.lock().unwrap(), |pending| { *pending }).unwrap();
+                *lock = true;
+            }
+        });
+        // ********* End Foreman Thread
 }
