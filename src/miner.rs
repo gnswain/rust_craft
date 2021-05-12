@@ -24,32 +24,31 @@ impl Miner {
     }
 
     pub fn take_food(&mut self) {
+        println!("\n{} is taking food.", self.name);
         {
             let dock_access = &mut *self.dock.lock().unwrap();
             let dock_str = (&*dock_access.to_string()).to_string();
-            println!("\n{} picks up {}.\n", self.name, dock_str);
+            println!("\n{} picks up {}.", self.name, dock_str);
             dock_access.take_food();
         }
     }
 
     pub fn make_food(&self) {
-        println!("\n{} is making food.\n", self.name);
+        println!("\n{} is making food.", self.name);
         let mut rng = rand::thread_rng();
         let milli = rng.gen_range(0..4000);
-        println!("{} is sleeping for {} milliseconds.", self.name, milli);
         thread::sleep(Duration::from_millis(milli));
     }
 
     pub fn eat_food(&self) {
-        println!("\n{} is eating food.\n", self.name);
+        println!("\n{} is eating food.", self.name);
         let mut rng = rand::thread_rng();
         let milli = rng.gen_range(0..4000);
-        println!("{} is sleeping for {} milliseconds.", self.name, milli);
         thread::sleep(Duration::from_millis(milli));
     }
 
     pub fn signal_foreman(&mut self) {
-        println!("{} signalling foreman.", self.name);
+        println!("\n{} signalling foreman.", self.name);
         {
             *(*self.foreman).0.lock().unwrap() = false;
         }
