@@ -79,10 +79,12 @@ fn main() {
         println!("Foreman Thread ID: {:?}", thread::current().id());
         loop {
             // Should wait while the value in the lock is true
-            let num = rng.gen_range(1..4);
+            let num = rng.gen_range(0..4);
             println!("Num: {}", num);
 
+            println!("------------------------------------");
             foreman.place_food(num);
+            println!("------------------------------------");
 
             let mut lock = f_cvar.wait_while(f_lock.lock().unwrap(), |pending| { *pending }).unwrap();
             *lock = true;
@@ -169,13 +171,17 @@ fn main() {
         let (bg_lock, bg_cvar) = &*cloned_bg;
 
         loop {
-            let mut lock = bg_cvar.wait_while(bg_lock.lock().unwrap(), |count| {
-                *count < 2
-            }).unwrap();
+            {
+                let mut lock = bg_cvar.wait_while(bg_lock.lock().unwrap(), |count| {
+                    println!("Bologna Count: {}", count);
+                    *count < 2
+                }).unwrap();
+                *lock = 0;
+            }
             bologna_miner.take_food();
             bologna_miner.signal_foreman();
+            bologna_miner.make_food();
             println!("##### Bologna Thread: {:?} #####", thread::current().id());
-            *lock = 0;
         }
     });
     // ********* End Bologna Miner Thread
@@ -191,13 +197,17 @@ fn main() {
         let (c_lock, c_cvar) = &*cloned_c;
 
         loop {
-            let mut lock = c_cvar.wait_while(c_lock.lock().unwrap(), |count| {
-                *count < 2
-            }).unwrap();
+            {
+                let mut lock = c_cvar.wait_while(c_lock.lock().unwrap(), |count| {
+                    println!("Cheese Count: {}", count);
+                    *count < 2
+                }).unwrap();
+                *lock = 0;
+            }
             cheese_miner.take_food();
             cheese_miner.signal_foreman();
+            cheese_miner.make_food();
             println!("##### Cheese Thread: {:?} #####", thread::current().id());
-            *lock = 0;
         }
     });
     // ********* End Cheese Miner Thread
@@ -213,13 +223,17 @@ fn main() {
         let (bd_lock, bd_cvar) = &*cloned_bd;
 
         loop {
-            let mut lock = bd_cvar.wait_while(bd_lock.lock().unwrap(), |count| {
-                *count < 2
-            }).unwrap();
+            {
+                let mut lock = bd_cvar.wait_while(bd_lock.lock().unwrap(), |count| {
+                    println!("Bread Count: {}", count);
+                    *count < 2
+                }).unwrap();
+                *lock = 0;
+            }
             bread_miner.take_food();
             bread_miner.signal_foreman();
+            bread_miner.make_food();
             println!("##### Bread Thread: {:?} #####", thread::current().id());
-            *lock = 0;
         }
     });
     // ********* End Bread Miner Thread

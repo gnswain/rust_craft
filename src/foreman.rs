@@ -22,7 +22,7 @@ impl Foreman {
     }
 
     pub fn place_food(&self, num: u32) {
-        println!("Place food");
+        println!("\nForeman is placing food.\n");
         match num {
             1 => {
                 // This is for bologna
