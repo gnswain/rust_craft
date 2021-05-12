@@ -144,7 +144,7 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
             
             loop {
                 // Should wait while the value in the lock is true
-                println!("\nForeman is waking up");
+                println!("\n~~~ Foreman is waking up ~~~");
                 let num = rng.gen_range(1..4);
     
                 println!("\n------------------------------------");
@@ -170,7 +170,7 @@ fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1:
             {
                 // Should wait while the value in the lock is true
                 let mut lock = cvar.wait_while(lock.lock().unwrap(), |pending| { *pending }).unwrap();
-                println!("\n{} wakes up.", name);
+                println!("\n=== {} wakes up. ===", name);
                 dealer.supplies_delivered();
                 *lock = true;
             }
@@ -189,7 +189,7 @@ fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc
         let (lock, cvar) = &*miner_arc;
 
         loop {
-            println!("\n{} wakes up.", name);
+            println!("\n--- {} wakes up. ---", name);
             {
                 let mut lock = cvar.wait_while(lock.lock().unwrap(), |count| {
                     *count < 2

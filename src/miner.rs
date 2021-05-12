@@ -71,9 +71,9 @@ impl Miner {
     ///
     /// * `self` - Reference to the current object
     pub fn make_food(&self) {
-        println!("\n{} is making food.", self.name);
         let mut rng = rand::thread_rng();
         let milli = rng.gen_range(0..4000);
+        println!("\n  ^^^ {} is MAKING food, it will take {} milliseconds. ^^^", self.name, milli);
         thread::sleep(Duration::from_millis(milli));
     }
 
@@ -84,14 +84,14 @@ impl Miner {
     ///
     /// * `self` - Reference to the current object.
     pub fn eat_food(&self) {
-        println!("\n{} is eating food.", self.name);
         let mut rng = rand::thread_rng();
         let milli = rng.gen_range(0..4000);
+        println!("\n    *** {} is EATING food, it will take {} milliseconds. ***", self.name, milli);
         thread::sleep(Duration::from_millis(milli));
     }
 
     pub fn signal_foreman(&mut self) {
-        println!("\n{} signalling foreman.", self.name);
+        println!("\n      <<< {} is signalling foreman. >>>", self.name);
         {
             *(*self.foreman).0.lock().unwrap() = false;
         }

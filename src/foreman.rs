@@ -78,9 +78,9 @@ impl Foreman {
                     
                     if drop_one && drop_two {
                         *b_lock.lock().unwrap() = false;
-                        b_cvar.notify_all();
-    
                         *c_lock.lock().unwrap() = false;
+
+                        b_cvar.notify_all();
                         c_cvar.notify_all();
                     }
                 }
@@ -99,10 +99,10 @@ impl Foreman {
 
                     if drop_one && drop_two {
                         *b_lock.lock().unwrap() = false;
-                        b_cvar.notify_all();
-                        
                         *c_lock.lock().unwrap() = false;
+
                         c_cvar.notify_all();
+                        b_cvar.notify_all();
                     }
                 }
             }
@@ -118,9 +118,9 @@ impl Foreman {
 
                     if drop_one && drop_two {
                         *bg_lock.lock().unwrap() = false;
-                        bg_cvar.notify_all();
-    
                         *bd_lock.lock().unwrap() = false;
+
+                        bg_cvar.notify_all();
                         bd_cvar.notify_all();
                     }
                 }
