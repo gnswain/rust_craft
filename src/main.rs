@@ -16,36 +16,7 @@ use std::time::{Instant};
 use rand::prelude::*;
 
 fn main() {
-    let args: Vec<String> = args().collect();
-
-    if args.len() != 3 {
-        println!("\nUsage: cargo run [amount of time] [T or F]");
-        exit(0);
-    }
-
-    let temp = &args[1];
-    let time: i32 = match temp.parse() {
-        Ok(n) => {
-            n
-        },
-        Err(_) => {
-            eprintln!("\nTime must be an integer.");
-            exit(0);
-        }
-    };
-
-    let mut write_to_file = false;
-
-    if args[2].eq_ignore_ascii_case("T") {
-        write_to_file = true;
-        if time < 1 {
-            println!("\nTime must be positive if writing to a file.");
-            exit(0);
-        }
-    } else if !args[2].eq_ignore_ascii_case("F") {
-        println!("\nSecond argument must be either 'T' or 'F' (True/False)");
-        exit(0);
-    }
+    let (write_to_file, time) = handle_input(args().collect());
 
     // Docks, shared memory
     let dock = Arc::new(Mutex::new(Dock::new()));   
@@ -119,6 +90,51 @@ fn main() {
             }
         }
     }
+}
+
+/// This function handles the user input from the command line. Takes in a vector
+/// of strings and pulling the time to run and if the programming is writing to a
+/// file
+/// 
+/// # Arguments
+/// 
+/// * 'args' - Command line arguments
+/// 
+/// # Returns
+/// 
+/// Tuple whose first element is true if the program needs to write to a file.
+/// Second element is an i32 that is the time to run the program.
+fn handle_input(args: Vec<String>) -> (bool, i32) {
+    if args.len() != 3 {
+        println!("\nUsage: cargo run [amount of time] [T or F]");
+        exit(0);
+    }
+
+    let temp = &args[1];
+    let time: i32 = match temp.parse() {
+        Ok(n) => {
+            n
+        },
+        Err(_) => {
+            eprintln!("\nTime must be an integer.");
+            exit(0);
+        }
+    };
+
+    let mut write_to_file = false;
+
+    if args[2].eq_ignore_ascii_case("T") {
+        write_to_file = true;
+        if time < 1 {
+            println!("\nTime must be positive if writing to a file.");
+            exit(0);
+        }
+    } else if !args[2].eq_ignore_ascii_case("F") {
+        println!("\nSecond argument must be either 'T' or 'F' (True/False)");
+        exit(0);
+    }
+
+    (write_to_file, time)
 }
 
 /// This function is used to spawn the foreman thread. It takes in 4 atomic references to
