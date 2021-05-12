@@ -1,8 +1,9 @@
 use std::sync::{Condvar, Mutex, Arc};
 
 pub struct Messenger {
-    // Probably will take this one out and handle it in main. It's how the foreman wakes the messenger up
-    foreman: Arc<(Mutex<u32>, Condvar)>,
+    // Might end up removing this
+    // Link between foreman and messenger
+    foreman: Arc<(Mutex<bool>, Condvar)>,
 
     // This are how the messengers communicate with each miner
     miner1: Arc<(Mutex<u32>, Condvar)>,
@@ -11,7 +12,8 @@ pub struct Messenger {
 }
 
 impl Messenger {
-    pub fn new(foreman: Arc<(Mutex<u32>, Condvar)>, miner1: Arc<(Mutex<u32>, Condvar)>, miner2: Arc<(Mutex<u32>, Condvar)>, miner3: Arc<(Mutex<u32>, Condvar)>) -> Messenger {
+    pub fn new(foreman: Arc<(Mutex<bool>, Condvar)>, miner1: Arc<(Mutex<u32>, Condvar)>,
+                miner2: Arc<(Mutex<u32>, Condvar)>, miner3: Arc<(Mutex<u32>, Condvar)>) -> Messenger {
         Messenger {
             foreman,
             miner1,

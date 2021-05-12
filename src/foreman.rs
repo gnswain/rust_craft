@@ -34,10 +34,10 @@ impl Foreman {
                     temp.place_food("Cheese".to_string());
                     temp.place_food("Bread".to_string());
                     
-                    *b_lock.lock().unwrap() = true;
+                    *b_lock.lock().unwrap() = false;
                     b_cvar.notify_all();
 
-                    *c_lock.lock().unwrap() = true;
+                    *c_lock.lock().unwrap() = false;
                     c_cvar.notify_all();
                 }
 
@@ -52,10 +52,10 @@ impl Foreman {
                     temp.place_food("Cheese".to_string());
                     temp.place_food("Bologna".to_string());
 
-                    *b_lock.lock().unwrap() = true;
+                    *b_lock.lock().unwrap() = false;
                     b_cvar.notify_all();
                     
-                    *c_lock.lock().unwrap() = true;
+                    *c_lock.lock().unwrap() = false;
                     c_cvar.notify_all();
                 }
             }
@@ -68,10 +68,10 @@ impl Foreman {
                     temp.place_food("Bread".to_string());
                     temp.place_food("Bologna".to_string());
 
-                    *bg_lock.lock().unwrap() = true;
+                    *bg_lock.lock().unwrap() = false;
                     bg_cvar.notify_all();
 
-                    *bd_lock.lock().unwrap() = true;
+                    *bd_lock.lock().unwrap() = false;
                     bd_cvar.notify_all();
                 }
             }

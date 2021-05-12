@@ -22,7 +22,7 @@ fn main() {
         exit(0);
     }
 
-    let mut temp = &args[1];
+    let temp = &args[1];
     let time: i32 = match temp.parse() {
         Ok(n) => {
             n
@@ -46,65 +46,134 @@ fn main() {
         exit(0);
     }
 
-    let dock = Arc::new(Mutex::new(Dock::new()));   // Docks, shared memory
+    // Docks, shared memory
+    let dock = Arc::new(Mutex::new(Dock::new()));   
+
+    // Let's miners signal foreman
+    let foreman_arc = Arc::new((Mutex::new(true), Condvar::new()));
 
     // Communication between foreman and messengers
-    let bolognaman_arc = Arc::new((Mutex::new(0), Condvar::new()));
-    let cheeseman_arc = Arc::new((Mutex::new(0), Condvar::new()));
-    let breadman_arc = Arc::new((Mutex::new(0), Condvar::new()));
+    let bolognaman_arc = Arc::new((Mutex::new(true), Condvar::new()));
+    let cheeseman_arc = Arc::new((Mutex::new(true), Condvar::new()));
+    let breadman_arc = Arc::new((Mutex::new(true), Condvar::new()));
 
     // Communication between messenger and miners
     let bologna_arc = Arc::new((Mutex::new(0), Condvar::new()));
     let cheese_arc = Arc::new((Mutex::new(0), Condvar::new()));
     let bread_arc = Arc::new((Mutex::new(0), Condvar::new()));
 
-    let foreman = Foreman::new(bolognaman_arc, cheeseman_arc, breadman_arc, dock);
+// =================== Might want to move these to functions or loops =====================
 
-// TODO: Might want to move these to functions
+    // Cloning references so we can move it to threads
+    let cloned_bgm = bolognaman_arc.clone();
+    let cloned_cm = cheeseman_arc.clone(); 
+    let cloned_br = breadman_arc.clone();
+    let cloned_dock = dock.clone();
     // ********* Begin Foreman Thread
     thread::spawn(move || {
+        let foreman = Foreman::new(cloned_bgm, cloned_cm, cloned_br, cloned_dock);
         let mut rng = rand::thread_rng();
-
+        println!("Foreman Thread ID: {:?}", thread::current().id());
         loop {
             let num = rng.gen_range(1..4);
-
+// TODO sleep
             foreman.place_food(num);
 
             thread::sleep(Duration::new(1, 0));
         }
-
-
     });
     // ********* End Foreman Thread
     
-
+    let foreman_to_bgm = bolognaman_arc.clone();
+    let cloned_bgm = bolognaman_arc.clone();
+    let cloned_bg = bologna_arc.clone();
+    let cloned_c = cheese_arc.clone();
+    let cloned_br = bread_arc.clone();
     // ********* Begin Bolognaman Thread - Notifies miners of bologna
+    thread::spawn(move || {
+        let bolognaman = Messenger::new(foreman_to_bgm, cloned_c, cloned_br, cloned_bg);
+        let (bgm_lock, bgm_cvar) = &*cloned_bgm;
 
+        loop {
+            {
+                // Should wait while the value in the lock is true
+                let mut lock = bgm_cvar.wait_while(bgm_lock.lock().unwrap(), |pending| { *pending }).unwrap();
+                println!("===== Bolognaman Thread ID: {:?} =====", thread::current().id());
+                bolognaman.supplies_delivered();
+                *lock = true;
+            }
+        }
+    });
     // ********* End Bolognaman Thread
 
 
+    let foreman_to_cm = cheeseman_arc.clone();
+    let cloned_cm = cheeseman_arc.clone();
+    let cloned_bg = bologna_arc.clone();
+    let cloned_c = cheese_arc.clone();
+    let cloned_br = bread_arc.clone();
     // ********* Begin Cheeseman Thread - Notifies miners of cheese
+    thread::spawn(move || {
+        let bolognaman = Messenger::new(foreman_to_cm, cloned_br, cloned_bg, cloned_c);
+        let (cm_lock, cm_cvar) = &*cloned_cm;
 
+        loop {
+            {
+                // Should wait while the value in the lock is true
+                let mut lock = cm_cvar.wait_while(cm_lock.lock().unwrap(), |pending| { *pending }).unwrap();
+                println!("===== Cheese Man Thread: {:?} =====", thread::current().id());
+                bolognaman.supplies_delivered();
+                *lock = true;
+            }
+        }
+    });
     // ********* End Cheeseman Thread
 
 
+    let foreman_to_brm = breadman_arc.clone();
+    let cloned_brm = breadman_arc.clone();
+    let cloned_bg = bologna_arc.clone();
+    let cloned_c = cheese_arc.clone();
+    let cloned_br = bread_arc.clone();
     // ********* Begin Breadman Thread - Notifies miners of bread
+    thread::spawn(move || {
+        let bolognaman = Messenger::new(foreman_to_brm, cloned_bg, cloned_c, cloned_br);
+        let (cm_lock, cm_cvar) = &*cloned_brm;
 
+        loop {
+            {
+                // Should wait while the value in the lock is true
+                let mut lock = cm_cvar.wait_while(cm_lock.lock().unwrap(), |pending| { *pending }).unwrap();
+                println!("===== Bread Man Thread: {:?} =====", thread::current().id());
+                bolognaman.supplies_delivered();
+                *lock = true;
+            }
+        }
+    });
     // ********* End Breadman Thread
 
 
     // ********* Begin Bolognaman Miner Thread
+    thread::spawn(move || {
+        println!("Thread: {:?}", thread::current().id());
 
+    });
     // ********* End Bolognaman Miner Thread
 
 
     // ********* Begin Cheese Miner Thread
+    thread::spawn(move || {
 
+        println!("Thread: {:?}", thread::current().id());
+    });
     // ********* End Cheese Miner Thread
 
 
     // ********* Begin Bread Miner Thread
+    thread::spawn(move || {
+        println!("Thread: {:?}", thread::current().id());
 
+    });
     // ********* End Bread Miner Thread
     
 

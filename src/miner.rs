@@ -10,11 +10,11 @@ pub struct Miner {
     // Might also go in main
     foreman: Arc<(Mutex<u32>, Condvar)>,
 
-    dock: Arc<(Mutex<Dock>)>
+    dock: Arc<Mutex<Dock>>
 }
 
 impl Miner {
-    pub fn new(name: String, messenger: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<u32>, Condvar)>, dock: Arc<(Mutex<Dock>)>) -> Miner {
+    pub fn new(name: String, messenger: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<u32>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Miner {
         Miner {
             name,
             messenger,
@@ -30,6 +30,9 @@ impl Miner {
             println!("{} picks up {}.", self.name, dock_str);
             dock_access.take_food();
         }
-        
+    }
+
+    pub fn signal_foreman(&mut self) {
+        (*self.foreman).1.notify_all();
     }
 }
