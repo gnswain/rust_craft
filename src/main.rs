@@ -38,36 +38,7 @@ use rand::prelude::*;
 /// This function will create multiple threads that run concurrently and effectively signal
 /// and share data with each other.
 fn main() {
-    let args: Vec<String> = args().collect();
-
-    if args.len() != 3 {
-        println!("\nUsage: cargo run [amount of time] [T or F]");
-        exit(0);
-    }
-
-    let temp = &args[1];
-    let time: i32 = match temp.parse() {
-        Ok(n) => {
-            n
-        },
-        Err(_) => {
-            eprintln!("\nTime must be an integer.");
-            exit(0);
-        }
-    };
-
-    let mut write_to_file = false;
-
-    if args[2].eq_ignore_ascii_case("T") {
-        write_to_file = true;
-        if time < 1 {
-            println!("\nTime must be positive if writing to a file.");
-            exit(0);
-        }
-    } else if !args[2].eq_ignore_ascii_case("F") {
-        println!("\nSecond argument must be either 'T' or 'F' (True/False)");
-        exit(0);
-    }
+    let (write_to_file, time) = handle_input(args().collect());
 
     // Docks, shared memory
     let dock = Arc::new(Mutex::new(Dock::new()));   
@@ -143,6 +114,51 @@ fn main() {
     }
 }
 
+/// This function handles the user input from the command line. Takes in a vector
+/// of strings and pulling the time to run and if the programming is writing to a
+/// file
+/// 
+/// # Arguments
+/// 
+/// * 'args' - Command line arguments
+/// 
+/// # Returns
+/// 
+/// Tuple whose first element is true if the program needs to write to a file.
+/// Second element is an i32 that is the time to run the program.
+fn handle_input(args: Vec<String>) -> (bool, i32) {
+    if args.len() != 3 {
+        println!("\nUsage: cargo run [amount of time] [T or F]");
+        exit(0);
+    }
+
+    let temp = &args[1];
+    let time: i32 = match temp.parse() {
+        Ok(n) => {
+            n
+        },
+        Err(_) => {
+            eprintln!("\nTime must be an integer.");
+            exit(0);
+        }
+    };
+
+    let mut write_to_file = false;
+
+    if args[2].eq_ignore_ascii_case("T") {
+        write_to_file = true;
+        if time < 1 {
+            println!("\nTime must be positive if writing to a file.");
+            exit(0);
+        }
+    } else if !args[2].eq_ignore_ascii_case("F") {
+        println!("\nSecond argument must be either 'T' or 'F' (True/False)");
+        exit(0);
+    }
+
+    (write_to_file, time)
+}
+
 /// This function is used to spawn the foreman thread. It takes in 4 atomic references to
 /// communicate with the different messengers. It also takes in an atomic reference to shared
 /// memory. The foreman thread will place food on the dock and sleeps until awaken again by
@@ -166,13 +182,14 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
             
             loop {
                 // Should wait while the value in the lock is true
-                println!("\n~~~ Foreman is waking up ~~~");
+                println!("\nForeman is waking up.");
                 let num = rng.gen_range(1..4);
     
                 println!("\n------------------------------------");
                 foreman.place_food(num);
                 println!("\n------------------------------------\n");
     
+                println!("\nForeman is going to sleep.");
                 let mut lock = f_cvar.wait_while(f_lock.lock().unwrap(), |pending| { *pending }).unwrap();
                 *lock = true;
             }
@@ -226,18 +243,18 @@ fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc
         let (lock, cvar) = &*miner_arc;
 
         loop {
-            println!("\n--- {} wakes up. ---", name);
             {
                 let mut lock = cvar.wait_while(lock.lock().unwrap(), |count| {
                     *count < 2
                 }).unwrap();
                 *lock = 0;
+                println!("\n--- {} wakes up. ---", name);
             }
             miner.take_food();
             miner.signal_foreman();
             miner.make_food();
             miner.eat_food();
-            println!("\n{} needs food.", name);
+            println!("\n--- {} needs food. ---", name);
         }
     });
     // ********* End Miner Thread

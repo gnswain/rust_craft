@@ -55,11 +55,11 @@ impl Miner {
     ///
     /// * `self` - Reference to the current object.
     pub fn take_food(&mut self) {
-        println!("\n{} is taking food.", self.name);
+        println!("\n  ~~~ {} is taking food. ~~~", self.name);
         {
             let dock_access = &mut *self.dock.lock().unwrap();
             let dock_str = (&*dock_access.to_string()).to_string();
-            println!("\n{} picks up {}.", self.name, dock_str);
+            println!("\n  ~~~ {} picks up {}. ~~~", self.name, dock_str);
             dock_access.take_food();
         }
     }
@@ -73,7 +73,7 @@ impl Miner {
     pub fn make_food(&self) {
         let mut rng = rand::thread_rng();
         let milli = rng.gen_range(0..4000);
-        println!("\n  ^^^ {} is MAKING food, it will take {} milliseconds. ^^^", self.name, milli);
+        println!("\n    ^^^ {} is MAKING food, it will take {} milliseconds. ^^^", self.name, milli);
         thread::sleep(Duration::from_millis(milli));
     }
 
