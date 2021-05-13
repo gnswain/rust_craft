@@ -157,6 +157,8 @@ fn handle_input(args: Vec<String>) -> (bool, i32) {
 /// * `cheeseman_arc` - Atomic reference to communicate with the cheese messenger.
 /// * `breadman_arc` - Atomic reference to communicate with the bread messenger.
 /// * `dock` - Shared memory.
+/// * `file_arc` - Mutex guard used for writing to file.
+/// * `file_bool` - boolean. If true, we write to a file, otherwise we output to the console.
 fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(Mutex<bool>, Condvar)>,
                  cheeseman_arc: Arc<(Mutex<bool>, Condvar)>, breadman_arc: Arc<(Mutex<bool>, Condvar)>,
                  dock: Arc<Mutex<Dock>>, file_arc: Arc<Mutex<File>>, file_bool: bool) {
@@ -194,6 +196,8 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
 /// * `miner1` - Atomic reference to communicate with the miner(s).
 /// * `miner2` - Atomic reference to communicate with the miner(s).
 /// * `miner3` - Atomic reference to communicate with the miner(s).
+/// * `file_arc` - Mutex guard used for writing to file.
+/// * `file_bool` - boolean. If true, we write to a file, otherwise we output to the console.
 fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1: Arc<(Mutex<u32>, Condvar)>,
                    miner2: Arc<(Mutex<u32>, Condvar)>, miner3: Arc<(Mutex<u32>, Condvar)>,
                    file_arc: Arc<Mutex<File>>, file_bool: bool) {
@@ -224,6 +228,8 @@ fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1:
 /// * `miner_arc` - communication link for the miner.
 /// * `foreman` - Atomic reference to communicate with the foreman.
 /// * `dock` - Shared data.
+/// * `file_arc` - Mutex guard used for writing to file.
+/// * `file_bool` - boolean. If true, output is redirected to a file, otherwise output to console.
 fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<bool>, Condvar)>,
                dock: Arc<Mutex<Dock>>, file_arc: Arc<Mutex<File>>, file_bool: bool) {
     // ********* Begin Miner Thread
