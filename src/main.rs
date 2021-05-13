@@ -63,55 +63,31 @@ fn main() {
     let bread_arc = Arc::new((Mutex::new(0), Condvar::new()));
     
     // Setting up and creating Foreman thread
-    let cloned_f = foreman_arc.clone();
-    let cloned_bgm = bolognaman_arc.clone();
-    let cloned_cm = cheeseman_arc.clone(); 
-    let cloned_br = breadman_arc.clone();
-    let cloned_dock = dock.clone();
-    let cloned_file = file_arc.clone();
-    spawn_foreman(cloned_f, cloned_bgm, cloned_cm, cloned_br, cloned_dock, cloned_file, file_bool);
+    spawn_foreman(foreman_arc.clone(), bolognaman_arc.clone(), cheeseman_arc.clone(), breadman_arc.clone(), 
+                dock.clone(), file_arc.clone(), file_bool);
     
     // Setting up and creating Bolognaman thread
-    let cloned_bgm = bolognaman_arc.clone();
-    let cloned_bg = bologna_arc.clone();
-    let cloned_c = cheese_arc.clone();
-    let cloned_br = bread_arc.clone();
-    let cloned_file = file_arc.clone();
-    spawn_messenger("Bolognaman".to_string(), cloned_bgm, cloned_c, cloned_br, cloned_bg, cloned_file, file_bool);
+    spawn_messenger("Bolognaman".to_string(), bolognaman_arc.clone(), cheese_arc.clone(), bread_arc.clone(), 
+                     bologna_arc.clone(), file_arc.clone(), file_bool);
 
     // Setting up and creating Cheeseman thread
-    let cloned_cm = cheeseman_arc.clone();
-    let cloned_bg = bologna_arc.clone();
-    let cloned_c = cheese_arc.clone();
-    let cloned_br = bread_arc.clone();
-    let cloned_file = file_arc.clone();
-    spawn_messenger("Cheeseman".to_string(), cloned_cm, cloned_br, cloned_bg, cloned_c, cloned_file, file_bool);
+    spawn_messenger("Cheeseman".to_string(), cheeseman_arc.clone(), bread_arc.clone(), bologna_arc.clone(),
+                     cheese_arc.clone(), file_arc.clone(), file_bool);
 
     // Setting up and creating Breadman thread
-    let cloned_brm = breadman_arc.clone();
-    let cloned_bg = bologna_arc.clone();
-    let cloned_c = cheese_arc.clone();
-    let cloned_br = bread_arc.clone();
-    let cloned_file = file_arc.clone();
-    spawn_messenger("Breadman".to_string(), cloned_brm, cloned_bg, cloned_c, cloned_br, cloned_file, file_bool);
+    spawn_messenger("Breadman".to_string(), breadman_arc.clone(), bologna_arc.clone(), cheese_arc.clone(),
+                     bread_arc.clone(), file_arc.clone(), file_bool);
 
     // Setting up and creating Bologna thread
-    let cloned_bg = bologna_arc.clone();
-    let cloned_f = foreman_arc.clone();
-    let cloned_dock = dock.clone();
-    spawn_miner("Bologna".to_string(), cloned_bg, cloned_f, cloned_dock, file_arc.clone(), file_bool);
+    spawn_miner("Bologna".to_string(), bologna_arc.clone(), foreman_arc.clone(), dock.clone(), 
+                 file_arc.clone(), file_bool);
 
     // Setting up and creating Cheese thread
-    let cloned_c = cheese_arc.clone();
-    let cloned_f = foreman_arc.clone();
-    let cloned_dock = dock.clone();
-    spawn_miner("Cheese".to_string(), cloned_c, cloned_f, cloned_dock, file_arc.clone(), file_bool);
+    spawn_miner("Cheese".to_string(), cheese_arc.clone(), foreman_arc.clone(), dock.clone(),
+                 file_arc.clone(), file_bool);
 
     // Setting up and creating Bread thread
-    let cloned_bd = bread_arc.clone();
-    let cloned_f = foreman_arc.clone();
-    let cloned_dock = dock.clone();
-    spawn_miner("Bread".to_string(), cloned_bd, cloned_f, cloned_dock, file_arc.clone(), file_bool);
+    spawn_miner("Bread".to_string(), bread_arc.clone(), foreman_arc.clone(), dock.clone(), file_arc.clone(), file_bool);
 
     // Main thread keeping track of time
     let now = Instant::now();
