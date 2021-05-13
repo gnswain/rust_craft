@@ -253,7 +253,9 @@ fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc
 }
 
 /// Writes to file if boolean is set to true. Prints to console if not.
-/// 
+///
+/// # Arguments
+///
 /// * 'pstr' - String to print
 /// * 'file_arc' - File to write to
 /// * 'file_bool' - True if writing to file

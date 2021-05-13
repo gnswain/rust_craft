@@ -22,17 +22,17 @@ use std::io::Write;
 /// Struct representing the communication between the foreman and the dock, bologna, cheese,
 /// and bread messengers.
 pub struct Foreman {
-    // Shared memory.
+    /// Shared memory.
     dock: Arc<Mutex<Dock>>,
-    // Communication with bologna messenger.
+    /// Communication with bologna messenger.
     bologna: Arc<(Mutex<bool>, Condvar)>,
-    // Communication with cheese messenger.
+    /// Communication with cheese messenger.
     cheese: Arc<(Mutex<bool>, Condvar)>,
-    // Communication with bread messenger.
+    /// Communication with bread messenger.
     bread: Arc<(Mutex<bool>, Condvar)>,
-    /// File to print to
+    /// File to print to.
     file_arc: Arc<Mutex<File>>,
-    /// True if writing to file
+    /// True if writing to file.
     file_bool: bool
 }
 
