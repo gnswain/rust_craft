@@ -15,5 +15,8 @@ command line arguments:
 Usage:
     - cargo run [amount of time] [T or F]
 
+Notes:
+    - The first argument must be a unsigned integer ( >= 0).
+
 Errors:
     - No known errors.
