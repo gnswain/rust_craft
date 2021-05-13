@@ -1,3 +1,7 @@
+use std::sync::{Mutex, Arc};
+use std::fs::File;
+use std::io::Write;
+
 /// Dock.rs
 ///
 /// This file will represent our dock where the food coming from the foreman will be placed.
@@ -14,19 +18,30 @@
 /// Struct representing the food currently placed on the dock.
 pub struct Dock {
     // Vector of strings representing the two distinct food items.
-    food: Vec<String>
+    food: Vec<String>,
+    /// File to print to
+    file_arc: Arc<Mutex<File>>,
+    /// True if writing to file
+    file_bool: bool
 }
 
 /// Implementation of the dock struct used to add additional functionality.
 impl Dock {
     /// Dock constructor that has no arguments. Initializes an empty String vector.
     ///
+    /// # Arguments
+    /// 
+    /// * 'file_arc' - File to write to
+    /// * 'file_bool' - True if writing to file
+    /// 
     /// # Return Value
     ///
     /// * `Dock` - Dock Struct
-    pub const fn new() -> Self {
+    pub fn new(file_arc: Arc<Mutex<File>>, file_bool: bool) -> Dock {
         Dock {
-            food: Vec::new()
+            food: Vec::new(),
+            file_arc,
+            file_bool
         }
     }
 
@@ -44,11 +59,11 @@ impl Dock {
     pub fn place_food(&mut self, meal: String) -> bool {
         let rtn: bool;
         if self.food.len() < 2 {
-            println!("         Putting {} on dock.", meal);
+            self.print_or_write("         Putting ".to_string() + &meal + " on dock.");
             self.food.push(meal);
             rtn = true;
         } else {
-            println!("\nCan't place food. Dock is full!\n");
+            self.print_or_write("\nCan't place food. Dock is full!\n".to_string());
             rtn = false;
         }
         rtn
@@ -65,11 +80,11 @@ impl Dock {
         if self.food.len() == 2 {
             self.food.clear();
         } else if self.food.len() == 0 {
-            println!("\nCan't take food. Dock is empty!\n")
+            self.print_or_write("\nCan't take food. Dock is empty!\n".to_string());
         } else if self.food.len() == 1 {
-            println!("\nDock only has one food.\n");
+            self.print_or_write("\nDock only has one food.\n".to_string());
         } else {
-            println!("\nDock is broken. Get it together\n");
+            self.print_or_write("\nDock is broken. Get it together\n".to_string());
         }
     }
 
@@ -92,5 +107,17 @@ impl Dock {
 
         rtn.truncate(rtn.len() - 5);
         rtn
+    }
+
+    /// Writes to file if boolean is set to true. Prints to console if not.
+    /// 
+    /// * 'pstr' - String to print
+    fn print_or_write(&self, pstr: String) {
+        if self.file_bool {
+            let file = &mut *self.file_arc.lock().unwrap();
+            file.write_all(pstr.as_bytes()).expect("Error writing to file");
+        } else {
+            println!("{}", pstr);
+        }
     }
 }
