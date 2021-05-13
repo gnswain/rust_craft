@@ -3,6 +3,8 @@ use std::sync::{Condvar, Mutex, Arc};
 use std::thread;
 use std::time::{Duration};
 use rand::prelude::*;
+use std::fs::File;
+use std::io::Write;
 
 /// miner.rs
 ///
@@ -24,7 +26,11 @@ pub struct Miner {
     // Communication between the miner and the foreman
     foreman: Arc<(Mutex<bool>, Condvar)>,
     // Shared memory
-    dock: Arc<Mutex<Dock>>
+    dock: Arc<Mutex<Dock>>,
+    /// File to print to
+    file_arc: Arc<Mutex<File>>,
+    /// True if writing to file
+    file_bool: bool
 }
 
 impl Miner {
@@ -36,15 +42,20 @@ impl Miner {
     /// * `name` - String representing the type of miner
     /// * `foreman` - Communication link between the miner and the foreman
     /// * `dock` - Shared memory
+    /// * 'file_arc' - File to write to
+    /// * 'file_bool' - True if writing to file
     ///
     /// # Return Value
     ///
     /// * `Miner` - Miner Struct
-    pub fn new(name: String, foreman: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Miner {
+    pub fn new(name: String, foreman: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>,
+               file_arc: Arc<Mutex<File>>, file_bool: bool) -> Miner {
         Miner {
             name,
             foreman,
-            dock
+            dock,
+            file_arc,
+            file_bool
         }
     }
 
@@ -55,11 +66,11 @@ impl Miner {
     ///
     /// * `self` - Reference to the current object.
     pub fn take_food(&mut self) {
-        println!("\n  ~~~ {} is taking food. ~~~", self.name);
+        self.print_or_write("\n  ~~~ ".to_string() + &self.name + " is taking food. ~~~");
         {
             let dock_access = &mut *self.dock.lock().unwrap();
             let dock_str = (&*dock_access.to_string()).to_string();
-            println!("\n  ~~~ {} picks up {}. ~~~", self.name, dock_str);
+            self.print_or_write("\n  ~~~ ".to_string() + &self.name + " picks up " + &dock_str + ". ~~~");
             dock_access.take_food();
         }
     }
@@ -73,7 +84,8 @@ impl Miner {
     pub fn make_food(&self) {
         let mut rng = rand::thread_rng();
         let milli = rng.gen_range(0..4000);
-        println!("\n    ^^^ {} is MAKING food, it will take {} milliseconds. ^^^", self.name, milli);
+        self.print_or_write("\n    ^^^ ".to_string() + &self.name + 
+                            " is MAKING food, it will take " + &milli.to_string() + " milliseconds. ^^^");
         thread::sleep(Duration::from_millis(milli));
     }
 
@@ -86,15 +98,29 @@ impl Miner {
     pub fn eat_food(&self) {
         let mut rng = rand::thread_rng();
         let milli = rng.gen_range(0..4000);
-        println!("\n    *** {} is EATING food, it will take {} milliseconds. ***", self.name, milli);
+        self.print_or_write("\n    *** ".to_string() + &self.name + 
+                            " is EATING food, it will take " + &milli.to_string() + " milliseconds. ***");
         thread::sleep(Duration::from_millis(milli));
     }
 
+    /// This function signals the foreman
     pub fn signal_foreman(&mut self) {
-        println!("\n      <<< {} is signalling foreman. >>>", self.name);
+        self.print_or_write("\n      <<< ".to_string() + &self.name + " is signalling foreman. >>>");
         {
             *(*self.foreman).0.lock().unwrap() = false;
         }
         (*self.foreman).1.notify_all();
+    }
+
+    /// Writes to file if boolean is set to true. Prints to console if not.
+    /// 
+    /// * 'pstr' - String to print
+    fn print_or_write(&self, pstr: String) {
+        if self.file_bool {
+            let file = &mut *self.file_arc.lock().unwrap();
+            file.write_all(pstr.as_bytes()).expect("Error writing to file");
+        } else {
+            println!("{}", pstr);
+        }
     }
 }

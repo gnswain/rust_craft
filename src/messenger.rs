@@ -14,9 +14,11 @@ use std::sync::{Condvar, Mutex, Arc};
 
 /// Messenger struct to represent communication between the messenger and the miners.
 pub struct Messenger {
-    // This are how the messengers communicate with each miner
+    /// First miner messenger will notify
     miner1: Arc<(Mutex<u32>, Condvar)>,
+    /// Second miner messenger will notify
     miner2: Arc<(Mutex<u32>, Condvar)>,
+    /// Will need to set count to 0 if a miner is notified
     miner3: Arc<(Mutex<u32>, Condvar)>
 }
 

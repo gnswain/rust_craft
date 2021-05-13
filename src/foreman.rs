@@ -1,5 +1,7 @@
 use crate::dock::Dock;
 use std::sync::{Condvar, Mutex, Arc};
+use std::fs::File;
+use std::io::Write;
 
 /// foreman.rs
 ///
@@ -28,6 +30,10 @@ pub struct Foreman {
     cheese: Arc<(Mutex<bool>, Condvar)>,
     // Communication with bread messenger.
     bread: Arc<(Mutex<bool>, Condvar)>,
+    /// File to print to
+    file_arc: Arc<Mutex<File>>,
+    /// True if writing to file
+    file_bool: bool
 }
 
 /// Implementation used to add functionality to the Foreman struct
@@ -41,17 +47,22 @@ impl Foreman {
     /// * `cheese` - Communication link between the foreman and the cheese messenger.
     /// * `bread` - Communication link between the foreman and the bread messenger.
     /// * `dock` - Shared memory.
+    /// * 'file_arc' - File to write to
+    /// * 'file_bool' - True if writing to file
     ///
     /// # Return Value
     ///
     /// * `Foreman` - Foreman Struct
     pub fn new(bologna: Arc<(Mutex<bool>, Condvar)>, cheese: Arc<(Mutex<bool>, Condvar)>,
-               bread: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>) -> Foreman {
+               bread: Arc<(Mutex<bool>, Condvar)>, dock: Arc<Mutex<Dock>>,
+               file_arc: Arc<Mutex<File>>, file_bool: bool) -> Foreman {
         Foreman {
             bologna,
             cheese,
             bread,
-            dock
+            dock,
+            file_arc,
+            file_bool
         }
     }
 
@@ -64,7 +75,7 @@ impl Foreman {
     /// * `self` - Reference to the current object.
     /// * `num` - Random integer (1-3) corresponding to the types of supplies placed on the dock.
     pub fn place_food(&self, num: u32) {
-        println!("\nForeman is placing food.\n");
+        self.print_or_write("\nForeman is placing food.\n".to_string());
         match num {
             1 => {
                 // This is for bologna
@@ -126,6 +137,18 @@ impl Foreman {
                 }
             }
             _ => {}
+        }
+    }
+
+    /// Writes to file if boolean is set to true. Prints to console if not.
+    /// 
+    /// * 'pstr' - String to print
+    fn print_or_write(&self, pstr: String) {
+        if self.file_bool {
+            let file = &mut *self.file_arc.lock().unwrap();
+            file.write_all(pstr.as_bytes()).expect("Error writing to file");
+        } else {
+            println!("{}", pstr);
         }
     }
 }

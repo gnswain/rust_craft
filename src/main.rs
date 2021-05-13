@@ -14,6 +14,8 @@ use std::process::exit;
 use std::thread;
 use std::time::{Instant};
 use rand::prelude::*;
+use std::fs::{File, OpenOptions};
+use std::io::Write;
 
 /// main.rs
 ///
@@ -38,10 +40,14 @@ use rand::prelude::*;
 /// This function will create multiple threads that run concurrently and effectively signal
 /// and share data with each other.
 fn main() {
-    let (write_to_file, time) = handle_input(args().collect());
+    let (file_bool, time) = handle_input(args().collect());
+
+    // Creating a file to write to and put it in an arc
+    let file = OpenOptions::new().create(true).append(true).open("log.txt").unwrap();
+    let file_arc = Arc::new(Mutex::new(file));
 
     // Docks, shared memory
-    let dock = Arc::new(Mutex::new(Dock::new()));   
+    let dock = Arc::new(Mutex::new(Dock::new(file_arc.clone(), file_bool)));   
 
     // Let's miners signal foreman
     let foreman_arc = Arc::new((Mutex::new(true), Condvar::new()));
@@ -57,51 +63,31 @@ fn main() {
     let bread_arc = Arc::new((Mutex::new(0), Condvar::new()));
     
     // Setting up and creating Foreman thread
-    let cloned_f = foreman_arc.clone();
-    let cloned_bgm = bolognaman_arc.clone();
-    let cloned_cm = cheeseman_arc.clone(); 
-    let cloned_br = breadman_arc.clone();
-    let cloned_dock = dock.clone();
-    spawn_foreman(cloned_f, cloned_bgm, cloned_cm, cloned_br, cloned_dock);
+    spawn_foreman(foreman_arc.clone(), bolognaman_arc.clone(), cheeseman_arc.clone(), breadman_arc.clone(), 
+                dock.clone(), file_arc.clone(), file_bool);
     
     // Setting up and creating Bolognaman thread
-    let cloned_bgm = bolognaman_arc.clone();
-    let cloned_bg = bologna_arc.clone();
-    let cloned_c = cheese_arc.clone();
-    let cloned_br = bread_arc.clone();
-    spawn_messenger("Bolognaman".to_string(), cloned_bgm, cloned_c, cloned_br, cloned_bg);
+    spawn_messenger("Bolognaman".to_string(), bolognaman_arc.clone(), cheese_arc.clone(), bread_arc.clone(), 
+                     bologna_arc.clone(), file_arc.clone(), file_bool);
 
     // Setting up and creating Cheeseman thread
-    let cloned_cm = cheeseman_arc.clone();
-    let cloned_bg = bologna_arc.clone();
-    let cloned_c = cheese_arc.clone();
-    let cloned_br = bread_arc.clone();
-    spawn_messenger("Cheeseman".to_string(), cloned_cm, cloned_br, cloned_bg, cloned_c);
+    spawn_messenger("Cheeseman".to_string(), cheeseman_arc.clone(), bread_arc.clone(), bologna_arc.clone(),
+                     cheese_arc.clone(), file_arc.clone(), file_bool);
 
     // Setting up and creating Breadman thread
-    let cloned_brm = breadman_arc.clone();
-    let cloned_bg = bologna_arc.clone();
-    let cloned_c = cheese_arc.clone();
-    let cloned_br = bread_arc.clone();
-    spawn_messenger("Breadman".to_string(), cloned_brm, cloned_bg, cloned_c, cloned_br);
+    spawn_messenger("Breadman".to_string(), breadman_arc.clone(), bologna_arc.clone(), cheese_arc.clone(),
+                     bread_arc.clone(), file_arc.clone(), file_bool);
 
     // Setting up and creating Bologna thread
-    let cloned_bg = bologna_arc.clone();
-    let cloned_f = foreman_arc.clone();
-    let cloned_dock = dock.clone();
-    spawn_miner("Bologna".to_string(), cloned_bg, cloned_f, cloned_dock);
+    spawn_miner("Bologna".to_string(), bologna_arc.clone(), foreman_arc.clone(), dock.clone(), 
+                 file_arc.clone(), file_bool);
 
     // Setting up and creating Cheese thread
-    let cloned_c = cheese_arc.clone();
-    let cloned_f = foreman_arc.clone();
-    let cloned_dock = dock.clone();
-    spawn_miner("Cheese".to_string(), cloned_c, cloned_f, cloned_dock);
+    spawn_miner("Cheese".to_string(), cheese_arc.clone(), foreman_arc.clone(), dock.clone(),
+                 file_arc.clone(), file_bool);
 
     // Setting up and creating Bread thread
-    let cloned_bd = bread_arc.clone();
-    let cloned_f = foreman_arc.clone();
-    let cloned_dock = dock.clone();
-    spawn_miner("Bread".to_string(), cloned_bd, cloned_f, cloned_dock);
+    spawn_miner("Bread".to_string(), bread_arc.clone(), foreman_arc.clone(), dock.clone(), file_arc.clone(), file_bool);
 
     // Main thread keeping track of time
     let now = Instant::now();
@@ -173,23 +159,25 @@ fn handle_input(args: Vec<String>) -> (bool, i32) {
 /// * `dock` - Shared memory.
 fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(Mutex<bool>, Condvar)>,
                  cheeseman_arc: Arc<(Mutex<bool>, Condvar)>, breadman_arc: Arc<(Mutex<bool>, Condvar)>,
-                 dock: Arc<Mutex<Dock>>) {
+                 dock: Arc<Mutex<Dock>>, file_arc: Arc<Mutex<File>>, file_bool: bool) {
         // ********* Begin Foreman Thread
         thread::spawn(move || {
-            let foreman = Foreman::new(bolognaman_arc, cheeseman_arc, breadman_arc, dock);
+            let foreman = Foreman::new(bolognaman_arc, cheeseman_arc, breadman_arc, dock, file_arc.clone(), file_bool);
             let (f_lock, f_cvar) = &*foreman_arc;
             let mut rng = rand::thread_rng();
-            
             loop {
                 // Should wait while the value in the lock is true
-                println!("\nForeman is waking up.");
+                print_or_write("\nForeman is waking up.".to_string(), file_arc.clone(), file_bool);
+
                 let num = rng.gen_range(1..4);
     
-                println!("\n------------------------------------");
+                print_or_write("\n------------------------------------".to_string(),
+                               file_arc.clone(), file_bool);
                 foreman.place_food(num);
-                println!("\n------------------------------------\n");
+                print_or_write("\n------------------------------------\n".to_string(), 
+                               file_arc.clone(), file_bool);
     
-                println!("\nForeman is going to sleep.");
+                print_or_write("\nForeman is going to sleep.".to_string(), file_arc.clone(), file_bool);
                 let mut lock = f_cvar.wait_while(f_lock.lock().unwrap(), |pending| { *pending }).unwrap();
                 *lock = true;
             }
@@ -207,7 +195,8 @@ fn spawn_foreman(foreman_arc: Arc<(Mutex<bool>, Condvar)>, bolognaman_arc: Arc<(
 /// * `miner2` - Atomic reference to communicate with the miner(s).
 /// * `miner3` - Atomic reference to communicate with the miner(s).
 fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1: Arc<(Mutex<u32>, Condvar)>,
-                   miner2: Arc<(Mutex<u32>, Condvar)>, miner3: Arc<(Mutex<u32>, Condvar)>) {
+                   miner2: Arc<(Mutex<u32>, Condvar)>, miner3: Arc<(Mutex<u32>, Condvar)>,
+                   file_arc: Arc<Mutex<File>>, file_bool: bool) {
     // ********* Begin Messenger Thread
     thread::spawn(move || {
         let dealer = Messenger::new(miner1, miner2, miner3);
@@ -217,7 +206,8 @@ fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1:
             {
                 // Should wait while the value in the lock is true
                 let mut lock = cvar.wait_while(lock.lock().unwrap(), |pending| { *pending }).unwrap();
-                println!("\n=== {} wakes up. ===", name);
+                let pstr = "\n=== ".to_string() + &name + " wakes up. ===";
+                print_or_write(pstr, file_arc.clone(), file_bool);
                 dealer.supplies_delivered();
                 *lock = true;
             }
@@ -235,11 +225,11 @@ fn spawn_messenger(name: String, messenger: Arc<(Mutex<bool>, Condvar)>, miner1:
 /// * `foreman` - Atomic reference to communicate with the foreman.
 /// * `dock` - Shared data.
 fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc<(Mutex<bool>, Condvar)>,
-               dock: Arc<Mutex<Dock>>) {
+               dock: Arc<Mutex<Dock>>, file_arc: Arc<Mutex<File>>, file_bool: bool) {
     // ********* Begin Miner Thread
     thread::spawn(move || {
         let temp = name.clone();
-        let mut miner = Miner::new(temp, foreman, dock);
+        let mut miner = Miner::new(temp, foreman, dock, file_arc.clone(), file_bool);
         let (lock, cvar) = &*miner_arc;
 
         loop {
@@ -248,14 +238,30 @@ fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc
                     *count < 2
                 }).unwrap();
                 *lock = 0;
-                println!("\n--- {} wakes up. ---", name);
+                let pstr = "\n--- ".to_string() + &name + " wakes up. ---";
+                print_or_write(pstr, file_arc.clone(), file_bool);
             }
             miner.take_food();
             miner.signal_foreman();
             miner.make_food();
             miner.eat_food();
-            println!("\n--- {} needs food. ---", name);
+            let pstr = "\n--- ".to_string() + &name + " needs food. ---";
+            print_or_write(pstr, file_arc.clone(), file_bool);
         }
     });
     // ********* End Miner Thread
+}
+
+/// Writes to file if boolean is set to true. Prints to console if not.
+/// 
+/// * 'pstr' - String to print
+/// * 'file_arc' - File to write to
+/// * 'file_bool' - True if writing to file
+fn print_or_write(pstr: String, file_arc: Arc<Mutex<File>>, file_bool: bool) {
+    if file_bool {
+        let file = &mut *file_arc.lock().unwrap();
+        file.write_all(pstr.as_bytes()).expect("Error writing to file");
+    } else {
+        println!("{}", pstr);
+    }
 }
