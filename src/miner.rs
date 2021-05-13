@@ -117,8 +117,9 @@ impl Miner {
     /// * 'pstr' - String to print
     fn print_or_write(&self, pstr: String) {
         if self.file_bool {
+            let p = pstr + "\n";
             let file = &mut *self.file_arc.lock().unwrap();
-            file.write_all(pstr.as_bytes()).expect("Error writing to file");
+            file.write_all(p.as_bytes()).expect("Error writing to file");
         } else {
             println!("{}", pstr);
         }
