@@ -261,8 +261,9 @@ fn spawn_miner(name: String, miner_arc: Arc<(Mutex<u32>, Condvar)>, foreman: Arc
 /// * 'file_bool' - True if writing to file
 fn print_or_write(pstr: String, file_arc: Arc<Mutex<File>>, file_bool: bool) {
     if file_bool {
+        let p = pstr + "\n";
         let file = &mut *file_arc.lock().unwrap();
-        file.write_all(pstr.as_bytes()).expect("Error writing to file");
+        file.write_all(p.as_bytes()).expect("Error writing to file");
     } else {
         println!("{}", pstr);
     }
